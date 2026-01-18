@@ -1,0 +1,16 @@
+<div class=" w-full ">
+  <app-breadcrumb></app-breadcrumb>
+  <nz-row [nzGutter]="10">
+   <nz-col [nzSpan]="24">
+     <nz-card nzTitle="حساب الطالب" nzBordered class=" !rounded-md !my-4 shadow-md" >
+       <nz-select [nzSize]="'large'" dir="rtl" (ngModelChange)="onSelect($event)" [ngModel]="selectedVal"  [nzAllowClear]="true" [nzShowSearch]="true" [nzDropdownStyle]="{'direction':'rtl'}" nzPlaceHolder="اختر اسم الطالب" class=" w-full">
+         @for (item of students_Name; track $index) {
+           <nz-option  [nzKey]="$index" [nzValue]="item._id" [nzLabel]="item.name"></nz-option>
+         }
+       </nz-select>
+     </nz-card>
+
+
+  </nz-col>
+ </nz-row>
+</div>

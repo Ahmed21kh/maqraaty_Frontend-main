@@ -1,0 +1,17 @@
+::ng-deep.ant-progress-circle.ant-progress-status-success .ant-progress-text {
+  color: #000 !important;
+}
+::ng-deep.slick-prev:before,::ng-deep.slick-next:before {
+  color: black !important;
+}
+
+::ng-deep.carousel {
+  padding-inline: 20px !important;
+  direction: rtl !important;
+}
+::ng-deep.slick-initialized .slick-slide {
+ margin-inline: 10px !important;
+}
+::ng-deep.slick-list {
+  direction: rtl !important;
+}

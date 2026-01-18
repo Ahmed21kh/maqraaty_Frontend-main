@@ -1,0 +1,350 @@
+<nz-layout  dir="rtl" class="app-layout scrollable-div">
+  <nz-sider
+    class="menu-sidebar !z-30"
+    nzCollapsible
+    nzWidth="256px"
+    nzBreakpoint="lg"
+    [nzCollapsed]="isCollapsed || (routeActive == '/home' || routeActive == '/')"
+    [nzTrigger]="null"
+    dir="rtl"
+    [nzTheme]="darkmode.getValue()"
+  >
+    <div class="sidebar-logo">
+      <!-- <a href="https://ng.ant.design/" target="_blank"> -->
+      <img src="assets/قران.webp" alt="logo" />
+
+      <h1 class="tracking-wide" nz-typography>مقرأتــــي</h1>
+      <!-- </a> -->
+    </div>
+    <ul
+      dir="rtl"
+      nzSelectable="true"
+      class="sidebar_menu"
+      nz-menu
+      [nzTheme]="darkmode.getValue()"
+      nzMode="inline"
+      [nzInlineCollapsed]="isCollapsed"
+      style="row-gap: 30px"
+    >
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/home'"
+        [routerLinkActive]="'/home'"
+        [nzSelected]="routeActive == '/home' || routeActive == '/'"
+      >
+        <span
+          style="font-size: 23px"
+          nz-icon
+          nzType="home"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+          >الرئيسية</span
+        >
+      </li>
+      <li
+        nz-submenu
+        nzTitle="الطلاب"
+        class="!text-lg"
+        [nzIcon]="'usergroup-add'"
+      >
+        <ul>
+          <li
+            dir="rtl"
+            style="
+              text-align: right;
+              align-items: center;
+              display: flex;
+              padding-right: 24px;
+              gap: 10px;
+            "
+            nz-menu-item
+            [routerLink]="'/add-student'"
+            [nzSelected]="routeActive == '/add-student'"
+          >
+            <span
+              style="font-size: 25px"
+              nz-icon
+              nzType="user-add"
+              nzTheme="outline"
+            ></span>
+            <span
+              style="margin-inline-start: 10px; font-size: 18px"
+              class="text-ellipsis overflow-hidden"
+              >اضافة طالب</span
+            >
+          </li>
+          <li
+          dir="rtl"
+          style="
+            text-align: right;
+            align-items: center;
+            display: flex;
+            padding-right: 24px;
+            gap: 10px;
+          "
+          nz-menu-item
+          [routerLink]="'/all-students'"
+          [nzSelected]="routeActive == '/all-students'"
+        >
+          <span
+            style="font-size: 25px"
+            nz-icon
+            nzType="team"
+            nzTheme="outline"
+          ></span>
+          <span
+            style="margin-inline-start: 10px; font-size: 18px"
+            class="text-ellipsis overflow-hidden"
+            >الطلاب المسجلين
+          </span>
+        </li>
+          <li
+            dir="rtl"
+            style="
+              text-align: right;
+              align-items: center;
+              display: flex;
+              padding-right: 24px;
+              gap: 10px;
+            "
+            nz-menu-item
+            [routerLink]="'/registerd'"
+            [nzSelected]="routeActive == '/registerd'"
+          >
+            <span
+              style="font-size: 25px"
+              nz-icon
+              nzType="usergroup-add"
+              nzTheme="outline"
+            ></span>
+            <span
+              style="margin-inline-start: 10px; font-size: 18px"
+              class="text-ellipsis overflow-hidden"
+              >الطلاب النشطين
+            </span>
+          </li>
+          <li
+            dir="rtl"
+            style="
+              text-align: right;
+              align-items: center;
+              display: flex;
+              padding-right: 24px;
+              gap: 10px;
+            "
+            nz-menu-item
+            [routerLink]="'/in-active-students'"
+            [nzSelected]="routeActive == '/in-active-students'"
+            class="!pl-0"
+          >
+            <span
+              style="font-size: 25px"
+              nz-icon
+              nzType="usergroup-delete"
+              nzTheme="outline"
+            ></span>
+            <span
+              style="margin-inline-start: 10px; font-size: 18px"
+              class="text-ellipsis overflow-hidden"
+            >
+              الطلاب غير النشطين</span
+            >
+          </li>
+        </ul>
+      </li>
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/payments'"
+        [nzSelected]="routeActive?.includes('/payments')"
+      >
+        <span
+          style="font-size: 25px"
+          nz-icon
+          nzType="dollar"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+          >اليومية بالمقرأة
+        </span>
+      </li>
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/attendance'"
+        [nzSelected]="routeActive == '/attendance'"
+      >
+        <span
+          nz-icon
+          style="font-size: 25px"
+          nzType="audit"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+        >
+          الحضور بالمقرأة</span
+        >
+      </li>
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/student-subscription'"
+        [nzSelected]="routeActive == '/student-subscription'"
+      >
+        <span
+          style="font-size: 25px"
+          nz-icon
+          nzType="dollar"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+          >الاشتراكات بالمقرأة
+        </span>
+      </li>
+
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/students-not-pay'"
+        [nzSelected]="routeActive == '/students-not-pay'"
+      >
+        <span
+          style="font-size: 25px"
+          nz-icon
+          nzType="strikethrough"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+        >
+          اشتراكات لم تدفع</span
+        >
+      </li>
+      <li
+        dir="rtl"
+        style="
+          text-align: right;
+          align-items: center;
+          display: flex;
+          padding-right: 24px;
+          gap: 10px;
+        "
+        nz-menu-item
+        [routerLink]="'/reports'"
+        [nzSelected]="routeActive == '/reports'"
+      >
+        <span
+          style="font-size: 25px"
+          nz-icon
+          nzType="pie-chart"
+          nzTheme="outline"
+        ></span>
+        <span
+          style="margin-inline-start: 10px; font-size: 18px"
+          class="text-ellipsis overflow-hidden"
+          >التقارير بالمقرأة
+        </span>
+      </li>
+    </ul>
+  </nz-sider>
+  <nz-layout
+    class="relative "
+    [ngStyle]="{ 'margin-right': isCollapsed || (routeActive == '/home' || routeActive == '/') ? '75px' : '250px' }"
+  >
+    <nz-header  class="sticky top-0  !z-20 ">
+      <div class="app-header" [ngStyle]="{background:'#fff'}">
+        <span class="flex items-center justify-between">
+          <span class="header-trigger !py-0" (click)="isCollapsed = !isCollapsed">
+            <span
+              class="trigger"
+              nz-icon
+              [nzType]="!isCollapsed ? 'menu-unfold' : 'menu-fold'"
+            ></span>
+          </span>
+          <!-- <span class="text-xl !px-4">
+            <span
+            class="cursor-pointer"
+            nz-icon
+            nzTheme="fill"
+            (click)="onChangeConfig()"
+            [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
+          </span> -->
+          <span class="text-xl !px-4">
+            <span
+            class="cursor-pointer"
+            nz-icon
+            nzTheme="fill"
+            (click)="toggleTheme()"
+            [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
+          </span>
+        </span>
+      </div>
+    </nz-header>
+   <ng-container  *ngIf=" routeActive == '/home' || routeActive == '/'">
+    <div class=" !text-xl !px-4 !absolute !left-4 !top-4 !z-50">
+      <!-- <nz-avatar [nz-tooltip]="'تغيير الواجهة'" (click)="toggleTheme()"  [nzIcon]="darkmode.getValue() == 'dark'?'sun':'moon' " class=" !cursor-pointer"></nz-avatar> -->
+       <button [nz-tooltip]="'تغيير الواجهة'" class=" !rounded-lg" nz-button nzType="primary" (click)="toggleTheme()">
+        <span
+        class="cursor-pointer"
+        nz-icon
+        nzTheme="fill"
+        [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
+       </button>
+    </div>
+   </ng-container>
+
+    <nz-content class=" inner-content">
+      <!-- <div class="inner-content"> -->
+       <!-- <nz-card class=" h-[100%]"> -->
+         <router-outlet></router-outlet>
+       <!-- </nz-card> -->
+      <!-- </div> -->
+    </nz-content>
+  </nz-layout>
+</nz-layout>

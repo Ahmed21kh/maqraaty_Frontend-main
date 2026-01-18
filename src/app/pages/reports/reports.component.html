@@ -1,0 +1,128 @@
+<div>
+  <div class=" flex justify-between items-center">
+    <app-breadcrumb></app-breadcrumb>
+    <nz-card [nzTitle]="''" nzBordered class=" !rounded-md" >
+      <div class=" flex items-center gap-4">
+        <div class=" flex items-center gap-2">
+          <span class=" text-lg font-medium">  عدد الطلاب :</span>
+          @if (loadingData) {
+            <span class=" mx-3">
+              <nz-spin ></nz-spin>
+            </span>
+          }@else {
+            <nz-tag class="!text-xl" nzColor="blue" >{{total ? total : 0}}</nz-tag>
+          }
+        </div>
+        <div class=" flex items-center gap-2">
+          <span class=" text-lg font-medium"> الاجمالي للمصروفات :</span>
+          @if (loadingData) {
+            <span class="  mx-3">
+              <nz-spin ></nz-spin>
+            </span>
+          }@else {
+            <nz-tag class="!text-xl" nzColor="blue">{{amountOfAllStudents ? amountOfAllStudents : 0}}</nz-tag>
+          }
+        </div>
+      </div>
+    </nz-card>
+  </div>
+  <div class="mt-10">
+    <div class="my-6 flex items-center gap-4">
+      <nz-range-picker [nzSize]="'large'" class=" !rounded-xl" [nzAllowClear]="false" [nzInputReadOnly]="true" [(ngModel)]="date" (ngModelChange)="onChange($event)"></nz-range-picker>
+      <nz-date-picker nzMode="year" nzSize="large" class=" !rounded-xl" [nzAllowClear]="false"  [nzInputReadOnly]="true" [(ngModel)]="yearDate" (ngModelChange)="onChangeYear($event)"></nz-date-picker>
+
+    </div>
+    <div class=" my-5 mx-4" dir="rtl">
+      <ngx-slick-carousel class="carousel"
+        #slickModal="slick-carousel"
+        [config]="slideConfig"
+        (init)="slickInit($event)"
+        style="direction: rtl;"
+        dir="rtl"
+        (breakpoint)="breakpoint($event)"
+        (afterChange)="afterChange($event)"
+        (beforeChange)="beforeChange($event)">
+        @for (month of listofMonths; track $index) {
+        <div ngxSlickItem class="slide" dir="rtl">
+          <button nz-button (click)="handleChangeMonth(month)"
+          [nzType]=" activeMonth == month ? 'primary':'default'"
+          class=" !rounded-lg !w-full"
+          >شهر
+            {{month}}</button>
+        </div>
+        }
+      </ngx-slick-carousel>
+    </div>
+    <div >
+      <nz-row [nzGutter]="[16,16]">
+        <nz-col [nzXs]="24" [nzMd]="12" [nzLg]="12" [nzXl]="8">
+          <app-statistic [loading]="loadingData" [class]="' !rounded-lg !shadow-lg '" [suffix]="suffix" [title]="title"  [value]="totalAmount" [valueTemp]="value" [style]="{ display:'flex', 'align-items':'center','justify-content':'space-between','margin-block':'20px' }"></app-statistic>
+          <ng-template #prefixTplOne>
+              <span class="">المرجو تحصيله : </span> <span class=" !text-[green]"> {{amountOfAllStudents}} </span> ج
+          </ng-template>
+          <ng-template #title><span class=" text-lg font-medium">اجمالي الدخل بالمقرأة</span></ng-template>
+          <ng-template #value>
+            <span class=" w-full "> الاجمالي : <span class=" !text-[#1890ff] !text-2xl">{{amountOfAllStudents}}</span> ج </span>
+
+          </ng-template>
+          <ng-template #suffix>
+            <div>
+              <nz-progress [nzStrokeColor]="'#1890ff'"  [nzFormat]="format"  [nzPercent]="100" nzType="circle" [nzWidth]="80"></nz-progress>
+               <ng-template #format let-item><span nz-typography>% {{item}}</span></ng-template>
+            </div>
+          </ng-template>
+        </nz-col>
+        <nz-col [nzXs]="24" [nzMd]="12" [nzLg]="12" [nzXl]="8">
+          <app-statistic [loading]="loadingData" [class]="' !rounded-lg !shadow-lg '" [suffix]="suffix1" [title]="title1"  [value]="totalAmount" [valueTemp]="value1" [style]="{ display:'flex', 'align-items':'center','justify-content':'space-between','margin-block':'20px' }"></app-statistic>
+          <ng-template #prefixTplOne1>
+
+          </ng-template>
+          <ng-template #title1><span class=" text-lg font-medium">الذي تم تحصيله بالمقرأة</span></ng-template>
+          <ng-template #value1>
+            <span class=" w-full "> الاجمالي : <span class=" !text-[green] !text-2xl">{{totalAmount}}</span> ج </span>
+          </ng-template>
+          <ng-template #suffix1>
+            <nz-progress [nzFormat]="format" [nzStrokeColor]="'green'" [nzPercent]="getPercent()" nzType="circle" [nzWidth]="80"></nz-progress>
+            <ng-template #format let-item><span nz-typography>% {{item}}</span></ng-template>
+          </ng-template>
+        </nz-col>
+        <nz-col [nzXs]="24" [nzMd]="12" [nzLg]="12" [nzXl]="8">
+          <app-statistic  [loading]="loadingData" [class]="' !rounded-lg !shadow-lg '" [suffix]="suffix2" [title]="title2"  [value]="totalAmount" [valueTemp]="value2" [style]="{ display:'flex', 'align-items':'center','justify-content':'space-between','margin-block':'20px' }"></app-statistic>
+          <ng-template #prefixTplOne1>
+
+          </ng-template>
+          <ng-template #title2><span class=" text-lg font-medium"> المتبقي</span></ng-template>
+          <ng-template #value2>
+            <span class=" w-full "> الاجمالي : <span class=" !text-[red] !text-2xl">{{amountOfAllStudents - totalAmount}}</span> ج</span>
+          </ng-template>
+          <ng-template #suffix2>
+            <nz-progress  [nzFormat]="format" [nzStrokeColor]="'red'" [nzPercent]="getPercentOfR()" nzType="circle" [nzWidth]="80"></nz-progress>
+            <ng-template #format let-item><span nz-typography>% {{item}}</span></ng-template>
+          </ng-template>
+        </nz-col>
+        <nz-col [nzXs]="24" [nzMd]="24" [nzLg]="24" [nzXl]="24">
+          <nz-card nzTitle="تاريخ المصاريف خلال الشهر" [nzLoading]="loadingData"  class="!rounded-lg !shadow-lg ">
+            <div class="max-h-[400px] overflow-auto px-2">
+              @for (item of historyPayments; track $index) {
+                <div [ngClass]=" theme.getValue()=='light' ?'cursor-pointer hover:bg-gray-100 px-3 rounded-md my-4':'cursor-pointer hover:bg-slate-700 px-3 rounded-md my-4' ">
+                  <div class="flex justify-between items-center gap-4  py-3" (click)="navigateToPaymentDetails(item.date)">
+                    <span class=" text-lg font-medium"><span class=" text-gray-400 me-2">التاريخ :</span> {{item.date}}</span>
+                    <span class=" text-lg font-medium"><span class="text-gray-400 me-2">الاجمالي :</span> {{item.totalAmount}} ج</span>
+                  </div>
+                  <nz-divider   class=" !my-2 "></nz-divider>
+                </div>
+              }@empty {
+                <div class=" my-3">
+                  <nz-empty [nzNotFoundContent]="contentTpl"></nz-empty>
+                  <ng-template #contentTpl>
+                    <span>لا يوجد بيانات</span>
+                  </ng-template>
+                </div>
+              }
+            </div>
+          </nz-card>
+        </nz-col>
+      </nz-row>
+    </div>
+  </div>
+</div>

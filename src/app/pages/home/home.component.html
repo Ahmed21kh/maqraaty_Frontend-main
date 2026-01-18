@@ -1,0 +1,49 @@
+<div class=" home !z-20">
+<div class=" relative w-full h-full ">
+  <div class=" absolute inset-0 flex items-center flex-col gap-8 justify-center  bg-[#00000075] ">
+    <div class=" w-auto flex flex-col gap-10 justify-center items-center">
+      <h1 class=" text-white text-2xl">مرحبا بك في <span> مقرأتي</span></h1>
+      <nz-input-group class=" !rounded-xl text-black hover:border-[#ccc] focus:border-[#ccc] !shadow-lg" [nzSize]="'large'" [nzPrefix]="prefix">
+        <input
+        nz-input
+        [(ngModel)]="inputValue"
+        (input)="onInput($event)"
+        [nzAutocomplete]="auto"
+        placeholder=" ابحث عن الطلاب المشتركون"
+        class=" indent-2"
+        />
+      </nz-input-group>
+      <h1 class=" text-6xl text-center z-10 text-white">{{'{ خيركم من تعلم القرآن و علمه }'}}</h1>
+      <nz-autocomplete dir="rtl"   [nzOverlayStyle]="{direction:'rtl'}" nzBackfill #auto>
+        @for (item of options; track $index) {
+          <nz-auto-option [nzValue]="item.name" [routerLink]="'/student-account/'+item._id">
+           <div class=" flex items-center justify-between">
+            <div class=" flex items-center gap-3">
+              @if (item.image) {
+                <img width="30" height="30" [src]="url+''+item.image" [alt]="item.name" >
+              } @else {
+                <img
+                loading="lazy"
+                width="30"
+                height="30"
+                style="margin: auto"
+                [src]="'assets/user.png'"
+                alt="img"
+              />
+              }
+              <h1 class=" text-lg font-medium">{{item.name}}</h1>
+            </div>
+            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
+           </div>
+          </nz-auto-option>
+        }
+      </nz-autocomplete>
+     <ng-template #prefix >
+      <span class=" text-gray-400 w-full" nz-icon nzType="search" nzTheme="outline"></span>
+    </ng-template>
+
+    </div>
+
+  </div>
+</div>
+</div>
