@@ -315,14 +315,9 @@
             (click)="onChangeConfig()"
             [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
           </span> -->
-          <span class="text-xl !px-4">
-            <span
-            class="cursor-pointer"
-            nz-icon
-            nzTheme="fill"
-            (click)="toggleTheme()"
-            [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
-          </span>
+          <button [nz-tooltip]="'تغيير الواجهة'" nz-button (click)="toggleTheme()" class="text-xl mx-2 !rounded-xl !px-4">
+            <ng-icon [name]="darkmode.getValue() == 'dark'?'heroSunSolid':'heroMoonSolid'"  class="cursor-pointer text-xl"></ng-icon>
+          </button>
         </span>
       </div>
     </nz-header>
@@ -330,11 +325,7 @@
     <div class=" !text-xl !px-4 !absolute !left-4 !top-4 !z-50">
       <!-- <nz-avatar [nz-tooltip]="'تغيير الواجهة'" (click)="toggleTheme()"  [nzIcon]="darkmode.getValue() == 'dark'?'sun':'moon' " class=" !cursor-pointer"></nz-avatar> -->
        <button [nz-tooltip]="'تغيير الواجهة'" class=" !rounded-lg" nz-button nzType="primary" (click)="toggleTheme()">
-        <span
-        class="cursor-pointer"
-        nz-icon
-        nzTheme="fill"
-        [nzType]="darkmode.getValue() == 'dark'?'sun':'moon'" ></span>
+        <ng-icon [name]="darkmode.getValue() == 'dark'?'heroSunSolid':'heroMoonSolid'" class="cursor-pointer text-xl"></ng-icon>
        </button>
     </div>
    </ng-container>

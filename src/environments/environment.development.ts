@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  // apiUrl: 'https://maqraaty-server.onrender.com/'
-  apiUrl: 'http://localhost:8080/'
+  apiUrl: 'https://maqraaty.onrender.com/'
+  // apiUrl: 'http://localhost:8080/'
 };

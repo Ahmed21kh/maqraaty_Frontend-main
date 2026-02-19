@@ -182,24 +182,50 @@ nz-content {
 ::ng-deep .sidebar_menu.ant-menu.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
   // background-color: #263a4d !important;
 }
+::ng-deep .ant-menu-inline.ant-menu-root .ant-menu-item > .ant-menu-title-content {
+  display: flex !important;
+  align-items: center !important;
+  & > .anticon{
+    display: flex !important;
+    align-items: center !important;
+    margin-right: inherit !important;
+  }
+}
 ::ng-deep .sidebar_menu.ant-menu.ant-menu-inline .ant-menu-item {
   text-align: right !important;
   // padding-right: 48px !important;
   margin-block: 30px !important;
+  & > .anticon{
+    display: flex !important;
+    align-items: center !important;
+  }
+
 }
 ::ng-deep .sidebar_menu.ant-menu.ant-menu-inline-collapsed > .ant-menu-item {
   padding: 0 calc(50% - 25px / 2) !important;
   margin-block: 20px !important;
   // padding-block: 0 calc(50% - 12px / 2) !important;
+
 }
+
+::ng-deep .sidebar_menu.ant-menu.ant-menu-inline-collapsed > .ant-menu-item > .ant-menu-title-content {
+  display: flex !important;
+  align-items: center !important;
+  & > .anticon{
+    display: flex !important;
+    align-items: center !important;
+    margin-right: inherit !important;
+  }
+}
+
 
 // .ant-menu .ant-menu-sub, .ant-menu.ant-menu .ant-menu-sub {
 //   text-align: right !important;
 //   padding-right: 48px !important;
 // }
 ::ng-deep .ant-menu-title-content {
- display: flex !important;
- align-items: center !important;
+//  display: flex !important;
+//  align-items: center !important;
 }
 ::ng-deep .ant-radio-checked .ant-radio-inner {
   // border-color: #0b1825 !important;

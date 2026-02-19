@@ -11,7 +11,6 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzLayoutModule } from 'ng-zorro-antd/layout';
 import { NzMenuModule } from 'ng-zorro-antd/menu';
 import { RouterModule } from '@angular/router';
-import { BreadcrumbComponent } from './components/breadcrumb/breadcrumb.component';
 import { NzBreadCrumbModule } from 'ng-zorro-antd/breadcrumb';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { HttpClientModule } from '@angular/common/http';
@@ -23,14 +22,17 @@ import {
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { ThemeService } from './services/theme.service';
 import { NzCardModule } from 'ng-zorro-antd/card';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, concatMap, tap } from 'rxjs';
 import { AppInitializerProvider } from './app-initializer.service';
 import { themeProviderFactory } from './theme.provider';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { NzAvatarModule } from 'ng-zorro-antd/avatar';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
-
+import { NgIconsModule, provideIcons } from '@ng-icons/core';
+import { heroMoonSolid, heroSunSolid } from '@ng-icons/heroicons/solid';
+import { ToastrService } from 'ngx-toastr';
+import { NzMessageService } from 'ng-zorro-antd/message';
 
 const ngZorroConfig: NzConfig = {
   theme: {
@@ -47,7 +49,6 @@ const ngZorroConfig: NzConfig = {
     NzLayoutModule,
     NzMenuModule,
     RouterModule,
-    BreadcrumbComponent,
     NzBreadCrumbModule,
     NzTableModule,
     HttpClientModule,
@@ -56,14 +57,16 @@ const ngZorroConfig: NzConfig = {
     NzTypographyModule,
     NzAvatarModule,
     NzToolTipModule,
-    NzEmptyModule
+    NzEmptyModule,
+    NgIconsModule
   ],
   providers: [AppInitializerProvider,{ provide: NZ_CONFIG, useValue: ngZorroConfig } ,
   {
     provide: 'themeService',
     useFactory: themeProviderFactory,
     deps: [ThemeService]
-  }
+  },
+  provideIcons({ heroSunSolid, heroMoonSolid })
 ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.less'],
@@ -79,6 +82,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private nzConfigService: NzConfigService,
     private themeService: ThemeService,
+    private message: NzMessageService,
     @Inject('themeService') private loadTheme: () => Promise<Event>
   ) {
     this.loadTheme().then(() => {
@@ -86,6 +90,7 @@ export class AppComponent implements OnInit {
     });
   }
   ngOnInit() {
+
     this.route.queryParams.subscribe((params) => {
       console.log(params);
       if (params['home']) {
@@ -107,8 +112,18 @@ export class AppComponent implements OnInit {
   }
 
   toggleTheme() {
-    this.themeService.toggleTheme();
-    this.darkmode.next(this.themeService.currentTheme.getValue());
+    this.message
+    .loading('... جاري تغيير الواجهة', { nzDuration: 1000 })
+    .onClose!.pipe(
+      concatMap(() => {
+        this.themeService.toggleTheme();
+        this.darkmode.next(this.themeService.currentTheme.getValue());
+        return this.message.success('تم تغيير الواجهة بنجاح', { nzDuration: 1000 }).onClose!;
+      }),
+    )
+    .subscribe(() => {
+      console.log('All completed!');
+    });
   }
   onChangeConfig() {
     this.nzConfigService.set('theme', { primaryColor: 'red' });

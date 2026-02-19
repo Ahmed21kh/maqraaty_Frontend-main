@@ -7,8 +7,8 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class AappServiceService {
-  url: string = 'http://localhost:8080/api/';
-  // url: string = `${environment.apiUrl}api/`;
+  // url: string = environment.apiUrl;
+  url: string = `${environment.apiUrl}api/`;
   constructor(private http: HttpClient) {}
 
   getDatesForDayOfWeek(year: any, month: any, dayOfWeek: number) {
