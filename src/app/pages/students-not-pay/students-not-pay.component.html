@@ -2,89 +2,56 @@
   <div>
     <div class=" flex justify-between items-center">
       <app-breadcrumb></app-breadcrumb>
-      <nz-card [nzTitle]="''" nzBordered class=" !rounded-md" >
+      <nz-card [nzTitle]="''" nzBordered class=" !rounded-md">
         <div class=" flex items-center gap-4">
           <div class=" flex items-center gap-2">
-            <span class=" text-lg font-medium">  عدد الطلاب :</span>
+            <span class=" text-lg font-medium"> عدد الطلاب :</span>
             @if (loadingData) {
-              <span class=" mx-3">
-                <nz-spin ></nz-spin>
-              </span>
+            <span class=" mx-3">
+              <nz-spin></nz-spin>
+            </span>
             }@else {
-              <nz-tag class="!text-xl" nzColor="blue" >{{total ? total : 0}}</nz-tag>
+            <nz-tag class="!text-xl" nzColor="blue">{{total ? total : 0}}</nz-tag>
             }
           </div>
           <div class=" flex items-center gap-2">
             <span class=" text-lg font-medium"> الاجمالي للمصروفات :</span>
             @if (loadingData) {
-              <span class="  mx-3">
-                <nz-spin ></nz-spin>
-              </span>
+            <span class="  mx-3">
+              <nz-spin></nz-spin>
+            </span>
             }@else {
-              <nz-tag class="!text-xl" nzColor="blue">{{totalAmount ? totalAmount : 0}}</nz-tag>
+            <nz-tag class="!text-xl" nzColor="blue">{{totalAmount ? totalAmount : 0}}</nz-tag>
             }
           </div>
         </div>
       </nz-card>
     </div>
     <div class="registered_table">
-      <div
-        style="
+      <div style="
           margin-block: 20px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 20px;
         ">
-        <nz-input-group
-          [nzSize]="'large'"
-          style="border-radius: 15px"
-          [nzSuffix]="suffixIconSearch">
-          <input
-            [nzSize]="'large'"
-            class="rounded-md"
-            type="text"
-            nz-input
-            [(ngModel)]="searchCode"
-            (keyup)="handleSearchQuery()"
-            placeholder="البحث بالكود " />
+        <nz-input-group [nzSize]="'large'" style="border-radius: 15px" [nzSuffix]="suffixIconSearch">
+          <input [nzSize]="'large'" class="rounded-md" type="text" nz-input [(ngModel)]="searchCode"
+            (keyup)="handleSearchQuery()" placeholder="البحث بالكود " />
         </nz-input-group>
-        <nz-input-group
-          [nzSize]="'large'"
-          style="border-radius: 15px"
-          [nzSuffix]="suffixIconSearch">
-          <input
-            [nzSize]="'large'"
-            class="rounded-md"
-            type="text"
-            nz-input
-            [(ngModel)]="searchPhone"
-            (keyup)="handleSearchQuery()"
-            placeholder="البحث برقم الهاتف" />
+        <nz-input-group [nzSize]="'large'" style="border-radius: 15px" [nzSuffix]="suffixIconSearch">
+          <input [nzSize]="'large'" class="rounded-md" type="text" nz-input [(ngModel)]="searchPhone"
+            (keyup)="handleSearchQuery()" placeholder="البحث برقم الهاتف" />
         </nz-input-group>
-        <nz-input-group
-          [nzSize]="'large'"
-          style="border-radius: 15px"
-          [nzSuffix]="suffixIconSearch">
-          <input
-            [nzSize]="'large'"
-            class="rounded-md"
-            type="text"
-            nz-input
-            [(ngModel)]="searchName"
-            (keyup)="handleSearchQuery()"
-            placeholder="البحث بالاسم" />
+        <nz-input-group [nzSize]="'large'" style="border-radius: 15px" [nzSuffix]="suffixIconSearch">
+          <input [nzSize]="'large'" class="rounded-md" type="text" nz-input [(ngModel)]="searchName"
+            (keyup)="handleSearchQuery()" placeholder="البحث بالاسم" />
         </nz-input-group>
         <ng-template #suffixIconSearch>
           <span nz-icon nzType="search"></span>
         </ng-template>
-        <nz-range-picker
-          [nzSize]="'large'"
-          class="w-full !rounded-xl"
-          [nzAllowClear]="false"
-          [nzInputReadOnly]="true"
-          [(ngModel)]="date"
-          (ngModelChange)="onChange($event)">
+        <nz-range-picker [nzSize]="'large'" class="w-full !rounded-xl" [nzAllowClear]="false" [nzInputReadOnly]="true"
+          [(ngModel)]="date" (ngModelChange)="onChange($event)">
         </nz-range-picker>
         <!-- <button
           (click)="showModal()"
@@ -103,21 +70,13 @@
         </button> -->
       </div>
       <div class=" my-4" dir="rtl">
-        <ngx-slick-carousel class="carousel"
-          #slickModal="slick-carousel"
-          [config]="slideConfig"
-          (init)="slickInit($event)"
-          style="direction: rtl;"
-          dir="rtl"
-          (breakpoint)="breakpoint($event)"
-          (afterChange)="afterChange($event)"
-          (beforeChange)="beforeChange($event)">
+        <ngx-slick-carousel class="carousel" #slickModal="slick-carousel" [config]="slideConfig"
+          (init)="slickInit($event)" style="direction: rtl;" dir="rtl" (breakpoint)="breakpoint($event)"
+          (afterChange)="afterChange($event)" (beforeChange)="beforeChange($event)">
           @for (month of listofMonths; track $index) {
-          <div ngxSlickItem class="slide" dir="rtl" >
-            <button nz-button (click)="handleChangeMonth(month)"
-            [nzType]=" activeMonth == month ? 'primary':'default'"
-             class=" !rounded-lg !w-full"
-            >شهر
+          <div ngxSlickItem class="slide" dir="rtl">
+            <button nz-button (click)="handleChangeMonth(month)" [nzType]=" activeMonth == month ? 'primary':'default'"
+              class=" !rounded-lg !w-full">شهر
               {{month}}</button>
           </div>
           }
@@ -131,10 +90,7 @@
               totalAmount ? totalAmount : 0
               }}</span>
           </div>
-          <nz-pagination
-            [nzPageIndex]="pageNumber"
-            [nzPageSize]="pageSize"
-            [nzTotal]="total"
+          <nz-pagination [nzPageIndex]="pageNumber" [nzPageSize]="pageSize" [nzTotal]="total"
             (nzPageIndexChange)="changePagination($event)"></nz-pagination>
         </div>
       </ng-template>
@@ -143,33 +99,17 @@
           {{total}}
         </div> -->
       </ng-template>
-      <nz-table
-        dir="rtl"
-        [nzPageSize]="pageSize"
-        #filterTable
-        [nzTotal]="total"
-        [nzShowTotal]="totalData"
-        nzPaginationPosition="bottom"
-        [nzFrontPagination]="false"
-        [nzShowPagination]="false"
-        [nzItemRender]="pagination"
-        [nzLoading]="loadingSearch || loadingData"
-        (nzPageIndexChange)="changePagination($event)"
-        [nzData]="listOfData"
-        nzTableLayout="fixed"
-        [nzFooter]="pagination">
+      <nz-table dir="rtl" [nzPageSize]="pageSize" #filterTable [nzTotal]="total" [nzShowTotal]="totalData"
+        nzPaginationPosition="bottom" [nzFrontPagination]="false" [nzShowPagination]="false" [nzItemRender]="pagination"
+        [nzLoading]="loadingSearch || loadingData" (nzPageIndexChange)="changePagination($event)" [nzData]="listOfData"
+        nzTableLayout="fixed" [nzFooter]="pagination">
         <thead>
           <tr>
             @for (column of listOfColumns; track $index) {
             <!-- <ng-template ngFor let-column [ngForOf]="listOfColumns"> -->
-            <th
-              style="text-align: center"
-              [nzSortOrder]="column.sortOrder"
-              [nzSortFn]="column.sortFn"
-              [nzSortDirections]="column.sortDirections"
-              [nzFilterMultiple]="column.filterMultiple"
-              [nzFilters]="column.listOfFilter"
-              [nzFilterFn]="column.filterFn">
+            <th style="text-align: center" [nzSortOrder]="column.sortOrder" [nzSortFn]="column.sortFn"
+              [nzSortDirections]="column.sortDirections" [nzFilterMultiple]="column.filterMultiple"
+              [nzFilters]="column.listOfFilter" [nzFilterFn]="column.filterFn">
               {{ column.name | empty }}
             </th>
 
@@ -202,28 +142,14 @@
             <td>
               @if (data.image !== '' && data.image !== null) {
 
-              <img
-                nz-image
-                loading="lazy"
-                width="70"
-                height="70"
-                style="margin: auto"
-                [nzSrc]="url + '' + data.image"
-                alt="img"
-                class="cursor-pointer" />
+              <img nz-image loading="lazy" width="70" height="70" style="margin: auto" [nzSrc]="url + '' + data.image"
+                alt="img" class="cursor-pointer" />
               }@else {
-              <img
-                loading="lazy"
-                width="70"
-                height="70"
-                style="margin: auto"
-                [src]="'assets/user.png'"
-                alt="img" />
+              <img loading="lazy" width="70" height="70" style="margin: auto" [src]="'assets/user.png'" alt="img" />
               }
             </td>
             <td [colSpan]="2">
-              <div
-                style="
+              <div style="
                   display: flex;
                   justify-content: center;
                   align-items: center;
@@ -249,18 +175,10 @@
                   nzTheme="fill"
                 ></span> -->
 
-                <button
-                  nz-button
-                  class="!rounded-md"
-                  nzType="primary"
-                  (click)="handleOpenConfirmPay(data?._id)">
+                <button nz-button class="!rounded-md" nzType="primary" (click)="handleOpenConfirmPay(data?._id)">
                   دفع الاشتراك
                 </button>
-                <button
-                  nz-button
-                  class="!rounded-md "
-                  nzDanger
-                  (click)="handleOpenConfirmDeActivate(data?._id)">
+                <button nz-button class="!rounded-md " nzDanger (click)="handleOpenConfirmDeActivate(data?._id)">
                   تعطيل
                 </button>
                 <!-- <span
@@ -281,14 +199,8 @@
     </div>
   </div>
 
-  <nz-modal
-    dir="rtl"
-    [(nzVisible)]="showStudent"
-    [nzTitle]="'بيانات الطالب'"
-    (nzOnCancel)="closeShowStudent()"
-    [nzFooter]="footer_show"
-    [nzWidth]="'700px'"
-    [nzStyle]="{ 'margin-top': '-38px' }"
+  <nz-modal dir="rtl" [(nzVisible)]="showStudent" [nzTitle]="'بيانات الطالب'" (nzOnCancel)="closeShowStudent()"
+    [nzFooter]="footer_show" [nzWidth]="'700px'" [nzStyle]="{ 'margin-top': '-38px' }"
     [nzBodyStyle]="{ 'overflow-y': 'auto', 'max-height': '720px' }">
     <ng-container *nzModalContent>
       <div dir="rtl" nz-row [nzGutter]="[24, 20]">
@@ -297,25 +209,11 @@
             >الصورة
           </nz-form-label> -->
           @if (student_Data.image !== undefined && student_Data.image !== '') {
-          <img
-            style="display: inline-block; cursor: zoom-in"
-            dir="ltr"
-            nz-image
-            width="150px"
-            height="150px"
-            class="rounded-full"
-            [nzSrc]="url + '' + student_Data.image"
-            [alt]="student_Data.name" />
+          <img style="display: inline-block; cursor: zoom-in" dir="ltr" nz-image width="150px" height="150px"
+            class="rounded-full" [nzSrc]="url + '' + student_Data.image" [alt]="student_Data.name" />
           } @else {
-          <img
-            style="display: inline-block"
-            dir="ltr"
-            nz-image
-            width="150px"
-            height="150px"
-            class="rounded-full"
-            [nzSrc]="'assets/user.png'"
-            [alt]="student_Data.name" />
+          <img style="display: inline-block" dir="ltr" nz-image width="150px" height="150px" class="rounded-full"
+            [nzSrc]="'assets/user.png'" [alt]="student_Data.name" />
           }
         </div>
         <div nz-col nzXs="24" nzMd="16" nzLg="16" nzXl="16">
@@ -378,14 +276,9 @@
         </div>
         <div nz-col nzXs="24" nzMd="12" nzLg="12" nzXl="12">
           <div nz-row [nzGutter]="[20, 20]">
-            <div
-              nz-col
-              nzXs="24"
-              nzMd="12"
-              [nzLg]="student_Data.is_payment == 'لا' ? 16 : 24"
+            <div nz-col nzXs="24" nzMd="12" [nzLg]="student_Data.is_payment == 'لا' ? 16 : 24"
               [nzXl]="student_Data.is_payment == 'لا' ? 16 : 24">
-              <nz-form-label
-                class="whitespace-pre-wrap !pr-0 !py-1 !text-gray-400">هل الطالب
+              <nz-form-label class="whitespace-pre-wrap !pr-0 !py-1 !text-gray-400">هل الطالب
                 يستثنى من دفع المصروفات ؟
               </nz-form-label>
               <span class="text-xl font-medium">{{
@@ -394,8 +287,7 @@
             </div>
             @if (student_Data.is_payment == 'لا') {
             <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
-              <nz-form-label
-                class="whitespace-pre-wrap !pr-0 !py-1 !text-gray-400">المصروفات
+              <nz-form-label class="whitespace-pre-wrap !pr-0 !py-1 !text-gray-400">المصروفات
               </nz-form-label>
               <span class="text-xl font-medium">{{ student_Data.amount | empty
                 }} {{ "ج" }}</span>
@@ -440,26 +332,20 @@
           <p class="text-xl font-medium">{{ student_Data.address | empty }}</p>
         </div>
         <div nz-col nzXs="24" nzMd="12" nzLg="12" nzXl="12">
-          <nz-form-label
-            class="!pr-0 !py-1 !text-gray-400">الملاحظات</nz-form-label>
+          <nz-form-label class="!pr-0 !py-1 !text-gray-400">الملاحظات</nz-form-label>
           <p class="text-xl font-medium">{{ student_Data.notes | empty }}</p>
         </div>
       </div>
     </ng-container>
   </nz-modal>
   <ng-template #footer_show>
-    <div
-      style="
+    <div style="
         display: flex;
         align-items: center;
         gap: 10px;
         direction: ltr !important;
       ">
-      <button
-        (click)="closeShowStudent()"
-        nz-button
-        nzType="default"
-        style="
+      <button (click)="closeShowStudent()" nz-button nzType="default" style="
           display: flex;
           align-items: center;
           gap: 15px;
@@ -470,16 +356,9 @@
     </div>
   </ng-template>
   <!-- add modal -->
-  <nz-modal
-    dir="rtl"
-    [(nzVisible)]="isVisible"
-    [nzTitle]="!isEdit ? 'اضافة طالب جديد' : 'تعديل بيانات الطالب'"
-    (nzOnCancel)="handleCancel()"
-    (nzOnOk)="handleOk()"
-    [nzFooter]="footer"
-    [nzWidth]="'700px'"
-    [nzStyle]="{ 'margin-top': '-38px' }"
-    [nzBodyStyle]="{ 'overflow-y': 'auto', 'max-height': '720px' }">
+  <nz-modal dir="rtl" [(nzVisible)]="isVisible" [nzTitle]="!isEdit ? 'اضافة طالب جديد' : 'تعديل بيانات الطالب'"
+    (nzOnCancel)="handleCancel()" (nzOnOk)="handleOk()" [nzFooter]="footer" [nzWidth]="'700px'"
+    [nzStyle]="{ 'margin-top': '-38px' }" [nzBodyStyle]="{ 'overflow-y': 'auto', 'max-height': '720px' }">
     <ng-container *nzModalContent>
       <form [autocomplete]="true" dir="rtl" [formGroup]="myForm">
         <div nz-row [nzGutter]="[24, 10]">
@@ -500,11 +379,7 @@
             <nz-form-label>السن<span style="color: red; margin-inline: 5px"> *
               </span>
             </nz-form-label>
-            <input
-              nz-input
-              type="number"
-              placeholder="ادخل السن "
-              formControlName="age" />
+            <input nz-input type="number" placeholder="ادخل السن " formControlName="age" />
             @if (f['age'].errors?.['required'] && f['age'].touched) {
             <p style="color: red">السن مطلوب</p>
             } @else if (f['age'].errors?.['minlength'] && f['age'].touched) {
@@ -514,15 +389,11 @@
             }
           </div>
           <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
-            <nz-form-label>السنة الدراسية<span
-                style="color: red; margin-inline: 5px">
+            <nz-form-label>السنة الدراسية<span style="color: red; margin-inline: 5px">
                 *
               </span>
             </nz-form-label>
-            <input
-              nz-input
-              placeholder="ادخل السنة الدراسية "
-              formControlName="study_year" />
+            <input nz-input placeholder="ادخل السنة الدراسية " formControlName="study_year" />
             <!-- <nz-date-picker nzMode="year" class=" w-full" nzPlaceHolder="ادخل السنة الدراسية " formControlName="study_year" ></nz-date-picker> -->
             @if (f['study_year'].errors?.['required'] &&
             f['study_year'].touched) {
@@ -540,49 +411,30 @@
             </nz-form-label>
             <div formArrayName="phone_1">
               @for (item of arr_phone_1.controls; track $index) {
-              <div
-                style="
+              <div style="
                   display: flex;
                   flex-direction: row;
                   align-items: center;
                   gap: 8px;
-                "
-                [style]="'margin-bottom:10px'">
-                <input
-                  nz-input
-                  type="text"
-                  [id]="$index"
-                  placeholder="ادخل رقم الموبايل "
-                  [formControlName]="$index" />
+                " [style]="'margin-bottom:10px'">
+                <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
                 @if ($index == 0) {
-                <button
-                  (click)="handleAdd('phone_1')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleAdd('phone_1')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md"
-                  class=" !rounded-md">
+                  " class=" !rounded-md" class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="plus"></span>
                 </button>
 
                 }@else {
-                <button
-                  (click)="handleRemove($index, 'phone_1')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleRemove($index, 'phone_1')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md"
-                  class=" !rounded-md">
+                  " class=" !rounded-md" class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="minus"></span>
                 </button>
                 }
@@ -602,47 +454,30 @@
             <nz-form-label>رقم موبايل الام</nz-form-label>
             <div formArrayName="phone_2">
               @for (item of arr_phone_2.controls; track $index) {
-              <div
-                style="
+              <div style="
                   display: flex;
                   flex-direction: row;
                   align-items: center;
                   gap: 8px;
-                "
-                [style]="'margin-bottom:10px'">
-                <input
-                  nz-input
-                  type="text"
-                  [id]="$index"
-                  placeholder="ادخل رقم الموبايل "
-                  [formControlName]="$index" />
+                " [style]="'margin-bottom:10px'">
+                <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
                 @if ($index == 0) {
-                <button
-                  (click)="handleAdd('phone_2')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleAdd('phone_2')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md">
+                  " class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="plus"></span>
                 </button>
 
                 }@else {
-                <button
-                  (click)="handleRemove($index, 'phone_2')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleRemove($index, 'phone_2')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md">
+                  " class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="minus"></span>
                 </button>
                 }
@@ -662,47 +497,30 @@
             <nz-form-label>رقم موبايل الاب</nz-form-label>
             <div formArrayName="phone_3">
               @for (item of arr_phone_3.controls; track $index) {
-              <div
-                style="
+              <div style="
                   display: flex;
                   flex-direction: row;
                   align-items: center;
                   gap: 8px;
-                "
-                [style]="'margin-bottom:10px'">
-                <input
-                  nz-input
-                  type="text"
-                  [id]="$index"
-                  placeholder="ادخل رقم الموبايل "
-                  [formControlName]="$index" />
+                " [style]="'margin-bottom:10px'">
+                <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
                 @if ($index == 0) {
-                <button
-                  (click)="handleAdd('phone_3')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleAdd('phone_3')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md">
+                  " class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="plus"></span>
                 </button>
 
                 }@else {
-                <button
-                  (click)="handleRemove($index, 'phone_3')"
-                  nz-button
-                  nzType="default"
-                  style="
+                <button (click)="handleRemove($index, 'phone_3')" nz-button nzType="default" style="
                     border-radius: 15px;
                     padding: 5px;
                     width: auto;
                     height: auto;
-                  "
-                  class=" !rounded-md">
+                  " class=" !rounded-md">
                   <span style="font-size: 12px" nz-icon nzType="minus"></span>
                 </button>
                 }
@@ -722,11 +540,7 @@
             <nz-form-label>التليفون الارضي
               <span style="color: red; margin-inline: 5px"> * </span>
             </nz-form-label>
-            <input
-              nz-input
-              type="text"
-              placeholder="ادخل التليفون الارضي "
-              formControlName="landline" />
+            <input nz-input type="text" placeholder="ادخل التليفون الارضي " formControlName="landline" />
             @if (f['landline'].errors?.['required'] && f['landline'].touched) {
             <p style="color: red">التليفون الارضي مطلوب</p>
             } @else if (f['landline'].errors?.['min'] && f['landline'].touched)
@@ -739,15 +553,11 @@
             }
           </div>
           <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
-            <nz-form-label>تاريخ التسجيل بالمقرأة<span
-                style="color: red; margin-inline: 5px">
+            <nz-form-label>تاريخ التسجيل بالمقرأة<span style="color: red; margin-inline: 5px">
                 *
               </span>
             </nz-form-label>
-            <nz-date-picker
-              class="w-full"
-              nzPlaceHolder="ادخل التاريخ "
-              formControlName="date"></nz-date-picker>
+            <nz-date-picker class="w-full" nzPlaceHolder="ادخل التاريخ " formControlName="date"></nz-date-picker>
 
             @if (f['date'].errors?.['required'] && f['date'].touched) {
             <p style="color: red">التاريخ مطلوب</p>
@@ -758,8 +568,7 @@
             }
           </div>
           <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
-            <nz-form-label>هل الطالب ازهري ؟<span
-                style="color: red; margin-inline: 5px">
+            <nz-form-label>هل الطالب ازهري ؟<span style="color: red; margin-inline: 5px">
                 *
               </span>
             </nz-form-label>
@@ -774,8 +583,7 @@
             }
           </div>
           <div nz-col nzXs="24" nzMd="12" nzLg="24" nzXl="24">
-            <nz-form-label>هل للطالب اقارب ؟<span
-                style="color: red; margin-inline: 5px">
+            <nz-form-label>هل للطالب اقارب ؟<span style="color: red; margin-inline: 5px">
                 *
               </span>
             </nz-form-label>
@@ -795,14 +603,12 @@
               </nz-form-label>
               <div formArrayName="relative">
                 @for (item of arr_relative.controls; track $index) {
-                <div
-                  style="
+                <div style="
                     display: flex;
                     flex-direction: row;
                     align-items: center;
                     gap: 8px;
-                  "
-                  [style]="'margin-bottom:10px'">
+                  " [style]="'margin-bottom:10px'">
                   <!-- <input
                       nz-input
                       type="text"
@@ -810,27 +616,15 @@
                       placeholder="ادخل رقم الموبايل "
                       [formControlName]="$index"
                     /> -->
-                  <nz-select
-                    nzShowSearch
-                    nzAllowClear
-                    nzPlaceHolder="Select a person"
-                    class="w-full"
-                    [id]="$index"
+                  <nz-select nzShowSearch nzAllowClear nzPlaceHolder="Select a person" class="w-full" [id]="$index"
                     [formControlName]="$index">
                     @for (item of students_Name ; track $index) {
 
-                    <nz-option
-                      [nzKey]="item._id"
-                      [nzLabel]="item.name"
-                      [nzValue]="item._id"></nz-option>
+                    <nz-option [nzKey]="item._id" [nzLabel]="item.name" [nzValue]="item._id"></nz-option>
                     }@empty { }
                   </nz-select>
                   @if ($index == 0) {
-                  <button
-                    (click)="handleAdd('relative')"
-                    nz-button
-                    nzType="default"
-                    style="
+                  <button (click)="handleAdd('relative')" nz-button nzType="default" style="
                       border-radius: 15px;
                       padding: 5px;
                       width: auto;
@@ -840,11 +634,7 @@
                   </button>
 
                   }@else {
-                  <button
-                    (click)="handleRemove($index, 'relative')"
-                    nz-button
-                    nzType="default"
-                    style="
+                  <button (click)="handleRemove($index, 'relative')" nz-button nzType="default" style="
                       border-radius: 15px;
                       padding: 5px;
                       width: auto;
@@ -868,8 +658,7 @@
             }
           </div>
           <div nz-col nzXs="24" nzMd="24" nzLg="16" nzXl="16">
-            <nz-form-label>هل الطالب يستثنى من دفع المصروفات ؟<span
-                style="color: red; margin-inline: 5px">
+            <nz-form-label>هل الطالب يستثنى من دفع المصروفات ؟<span style="color: red; margin-inline: 5px">
                 *
               </span>
             </nz-form-label>
@@ -888,12 +677,7 @@
           <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
             @if (this.myForm.value.is_payment == 'لا' ) {
             <nz-form-label> المصروفات </nz-form-label>
-            <input
-              nz-input
-              min="0"
-              type="number"
-              class="w-full"
-              placeholder="ادخل المصروفات "
+            <input nz-input min="0" type="number" class="w-full" placeholder="ادخل المصروفات "
               formControlName="amount" />
 
             @if (pf['amount'].errors?.['required'] && pf['amount'].touched) {
@@ -906,12 +690,8 @@
             <nz-form-label>العنوان <span style="color: red; margin-inline: 5px">
                 * </span>
             </nz-form-label>
-            <textarea
-              nz-input
-              placeholder="ادخل العنوان "
-              formControlName="address"
-              [nzAutosize]="{ minRows: 5, maxRows: 5 }"
-              [rows]="5"></textarea>
+            <textarea nz-input placeholder="ادخل العنوان " formControlName="address"
+              [nzAutosize]="{ minRows: 5, maxRows: 5 }" [rows]="5"></textarea>
             @if (f['address'].errors?.['required'] && f['address'].touched) {
             <p style="color: red">العنوان مطلوب</p>
             } @else {
@@ -920,23 +700,15 @@
           </div>
           <div nz-col nzXs="24" nzMd="12" nzLg="12" nzXl="12">
             <nz-form-label>الملاحظات</nz-form-label>
-            <textarea
-              nz-input
-              placeholder="ادخل الملاحظات "
-              formControlName="notes"
-              [nzAutosize]="{ minRows: 5, maxRows: 5 }"
-              [rows]="5"></textarea>
+            <textarea nz-input placeholder="ادخل الملاحظات " formControlName="notes"
+              [nzAutosize]="{ minRows: 5, maxRows: 5 }" [rows]="5"></textarea>
           </div>
           <div nz-col nzXs="24" nzMd="24" nzLg="24" nzXl="24">
             <nz-form-label>الصورة <span style="color: red; margin-inline: 5px">
                 * </span>
             </nz-form-label>
             @if (!isEdit) {
-            <nz-upload
-              nzType="drag"
-              [nzMultiple]="false"
-              [nzAction]="url + 'api/upload-image'"
-              nzName="file"
+            <nz-upload nzType="drag" [nzMultiple]="false" [nzAction]="url + 'api/upload-image'" nzName="file"
               (nzChange)="handleChange($event)">
               <p class="ant-upload-drag-icon">
                 <span nz-icon nzType="inbox"></span>
@@ -948,46 +720,25 @@
             </nz-upload>
             @if (myForm.value.image) {
             <div class="mt-3 w-32 h-32 bg-neutral-300 rounded-lg">
-              <img
-                nz-image
-                class="w-full h-full overflow-hidden inline-block cursor-zoom-in rounded-lg"
-                [nzSrc]="url + '' + myForm.value.image"
-                alt="img" />
+              <img nz-image class="w-full h-full overflow-hidden inline-block cursor-zoom-in rounded-lg"
+                [nzSrc]="url + '' + myForm.value.image" alt="img" />
             </div>
 
             } }@else {
             <div nz-row [nzGutter]="[24, 24]" nzAlign="middle">
               <div nz-col nzSpan="24">
                 @if (myForm.value.image !== '') {
-                <img
-                  style="display: inline-block; cursor: zoom-in"
-                  dir="ltr"
-                  nz-image
-                  width="100px"
-                  height="100px"
-                  [nzSrc]="url + '' + myForm.value.image"
-                  alt />
+                <img style="display: inline-block; cursor: zoom-in" dir="ltr" nz-image width="100px" height="100px"
+                  [nzSrc]="url + '' + myForm.value.image" alt />
                 } @else {
-                <img
-                  style="display: inline-block"
-                  dir="ltr"
-                  nz-image
-                  width="100px"
-                  height="100px"
-                  [nzSrc]="'assets/user.png'"
-                  alt />
+                <img style="display: inline-block" dir="ltr" nz-image width="100px" height="100px"
+                  [nzSrc]="'assets/user.png'" alt />
                 }
               </div>
               <div nz-col nzSpan="24">
-                <nz-upload
-                  [nzMultiple]="false"
-                  [nzAction]="url + 'api/upload-image'"
-                  nzName="file"
+                <nz-upload [nzMultiple]="false" [nzAction]="url + 'api/upload-image'" nzName="file"
                   (nzChange)="handleChange($event)">
-                  <button
-                    nz-button
-                    nzType="default"
-                    style="display: flex; align-items: center; gap: 10px">
+                  <button nz-button nzType="default" style="display: flex; align-items: center; gap: 10px">
                     <span nz-icon nzType="upload"></span>
                     Click to Upload
                   </button>
@@ -1005,19 +756,13 @@
     </ng-container>
   </nz-modal>
   <ng-template #footer>
-    <div
-      style="
+    <div style="
         display: flex;
         align-items: center;
         gap: 10px;
         direction: ltr !important;
       ">
-      <button
-        (click)="handleCancel()"
-        nz-button
-        nzType="default"
-        [disabled]="loadingAdd || loadingAEdit"
-        style="
+      <button (click)="handleCancel()" nz-button nzType="default" [disabled]="loadingAdd || loadingAEdit" style="
           display: flex;
           align-items: center;
           gap: 15px;
@@ -1027,33 +772,21 @@
       </button>
       @if (!isEdit) {
 
-      <button
-        (click)="handleOk()"
-        nz-button
-        [nzLoading]="loadingAdd"
-        nzType="default"
-        style="
+      <button (click)="handleOk()" nz-button [nzLoading]="loadingAdd" nzType="default" style="
           display: flex;
           align-items: center;
           gap: 15px;
           border-radius: 15px;
-        "
-        class=" !rounded-md">
+        " class=" !rounded-md">
         اضافة
       </button>
       }@else {
-      <button
-        (click)="handleSubmitEdit()"
-        nz-button
-        [nzLoading]="loadingAEdit"
-        nzType="default"
-        style="
+      <button (click)="handleSubmitEdit()" nz-button [nzLoading]="loadingAEdit" nzType="default" style="
           display: flex;
           align-items: center;
           gap: 15px;
           border-radius: 15px;
-        "
-        class=" !rounded-md">
+        " class=" !rounded-md">
         تعديل
       </button>
       }
@@ -1061,20 +794,14 @@
   </ng-template>
 
   <!-- activate and deactivate modal-->
-  <nz-modal
-    [(nzVisible)]="isDeActivate"
-    nzTitle="تعطيل الطلاب"
-    (nzOnCancel)="handleCancelConfirmDeActivate()"
-    nzCancelText="الغاء"
-    nzOkText="تعطيل"
-    [nzFooter]="activeFooter"
-    (nzOnOk)="handleActivate_deActivate_Student()">
+  <nz-modal [(nzVisible)]="isDeActivate" nzTitle="تعطيل الطلاب" (nzOnCancel)="handleCancelConfirmDeActivate()"
+    nzCancelText="الغاء" nzOkText="تعطيل" [nzFooter]="activeFooter" (nzOnOk)="handleActivate_deActivate_Student()">
     <ng-container *nzModalContent>
       <div>
         <h1 style="font-size: 22px; text-align: end">
           هل انت متأكد من تعطيل هذا الطالب ؟
         </h1>
-        <div class=" mt-5 mb-3 " dir="rtl" nz-row  [nzAlign]="'middle'">
+        <div class=" mt-5 mb-3 " dir="rtl" nz-row [nzAlign]="'middle'">
           <div nz-col [nzSm]="5">
             <label class=" !font-medium">تاريخ التعطيل :</label>
           </div>
@@ -1100,18 +827,13 @@
     </ng-container>
   </nz-modal>
   <ng-template #activeFooter>
-    <div
-      style="
+    <div style="
         display: flex;
         align-items: center;
         gap: 10px;
         direction: ltr !important;
       ">
-      <button
-        (click)="handleCancelConfirmDeActivate()"
-        nz-button
-        nzType="default"
-        style="
+      <button (click)="handleCancelConfirmDeActivate()" nz-button nzType="default" style="
           display: flex;
           align-items: center;
           gap: 15px;
@@ -1119,13 +841,8 @@
         ">
         الغاء
       </button>
-      <button
-        [nzLoading]="loadingDeactivate"
-        (click)="handleActivate_deActivate_Student()"
-        nz-button
-        nzType="primary"
-        class=""
-        style="
+      <button [nzLoading]="loadingDeactivate" (click)="handleActivate_deActivate_Student()" nz-button nzType="primary"
+        class="" style="
           display: flex;
           align-items: center;
           gap: 15px;
@@ -1136,29 +853,13 @@
     </div>
   </ng-template>
 
-  <nz-modal
-    [(nzVisible)]="isDeleteModal"
-    nzTitle="دفع الاشتراك للطالب"
-    (nzOnCancel)="handleCancelConfirmpay()"
-    nzCancelText="الغاء"
-    nzOkText="دفع"
-    [nzFooter]="delFooter"
-    (nzOnOk)="handlePay()"
-    [nzOkDisabled]="!payForm.valid">
+  <nz-modal [(nzVisible)]="isDeleteModal" nzTitle="دفع الاشتراك للطالب" (nzOnCancel)="handleCancelConfirmpay()"
+    nzCancelText="الغاء" nzOkText="دفع" [nzFooter]="delFooter" (nzOnOk)="handlePay()" [nzOkDisabled]="!payForm.valid">
     <ng-container *nzModalContent>
-      <form
-        dir="rtl"
-        [formGroup]="payForm"
-        autocomplete="on"
-        class="flex gap-3 items-center flex-wrap">
+      <form dir="rtl" [formGroup]="payForm" autocomplete="on" class="flex gap-3 items-center flex-wrap">
         <div class=" w-full">
           <label for="payment"> قيمة الاشتراك : </label>
-          <input
-            [nzSize]="'large'"
-            class="rounded-md mt-2"
-            nz-input
-            type="number"
-            placeholder="ادخل قيمة الاشتراك"
+          <input [nzSize]="'large'" class="rounded-md mt-2" nz-input type="number" placeholder="ادخل قيمة الاشتراك"
             formControlName="amount" />
           @if (pf['amount'].errors?.['required'] && pf['amount'].touched) {
           <p style="color: red">هذا الحقل مطلوب</p>
@@ -1168,31 +869,27 @@
         </div>
         <div class=" w-full">
           <label for="date"> تاريخ الدفع : </label>
-          <nz-date-picker [nzSize]="'large'" [nzAllowClear]="true" [nzInputReadOnly]="true" class=" !w-full rounded-md mt-2" formControlName="date" nzPlaceHolder="اختر التاريخ" ></nz-date-picker>
+          <nz-date-picker [nzSize]="'large'" [nzAllowClear]="true" [nzInputReadOnly]="true"
+            class=" !w-full rounded-md mt-2" formControlName="date" nzPlaceHolder="اختر التاريخ"></nz-date-picker>
 
-            @if (pf['date'].errors?.['required'] && pf['date'].touched) {
-              <p style="color: red">هذا الحقل مطلوب</p>
-              } @else {
-              <p></p>
-              }
+          @if (pf['date'].errors?.['required'] && pf['date'].touched) {
+          <p style="color: red">هذا الحقل مطلوب</p>
+          } @else {
+          <p></p>
+          }
 
         </div>
       </form>
     </ng-container>
   </nz-modal>
   <ng-template #delFooter>
-    <div
-      style="
+    <div style="
         display: flex;
         align-items: center;
         gap: 10px;
         direction: ltr !important;
       ">
-      <button
-        (click)="handleCancelConfirmpay()"
-        nz-button
-        nzType="default"
-        style="
+      <button (click)="handleCancelConfirmpay()" nz-button nzType="default" style="
           display: flex;
           align-items: center;
           gap: 15px;
@@ -1200,14 +897,8 @@
         ">
         الغاء
       </button>
-      <button
-        [disabled]="!payForm.valid"
-        [nzLoading]="loadingPay"
-        (click)="handlePay()"
-        nzType="primary"
-        nz-button
-        class="rounded-md"
-        style="
+      <button [disabled]="!payForm.valid" [nzLoading]="loadingPay" (click)="handlePay()" nzType="primary" nz-button
+        class="rounded-md" style="
           display: flex;
           align-items: center;
           gap: 15px;

@@ -64,6 +64,7 @@ export interface DataItem {
   notes: string;
   date: Date;
   amount: any;
+  active_status:string;
 }
 interface AttendanceItem {
   attend_days_month: any;
@@ -214,7 +215,7 @@ export class StudentsNotPayComponent implements OnInit {
       filterMultiple: false,
       listOfFilter: [],
       filterFn: null,
-    },
+    }
   ];
   pageSize: number = 100;
   pageNumber: number = 1;
