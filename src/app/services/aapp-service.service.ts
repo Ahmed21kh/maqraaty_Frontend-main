@@ -271,7 +271,7 @@ export class AappServiceService {
       pageNum: number,
       size: number,
       x?: any): Observable<any> {
-      return this.http.get(this.url + `get-active-or-inactive?page=${pageNum}&limit=${size}${x}`,
+      return this.http.get(this.url + `get-inactive-students?page=${pageNum}&limit=${size}${x}`,
       {
         headers: {
           'Cache-Control': ' max-age=604800 , stale-while-revalidate=86400',

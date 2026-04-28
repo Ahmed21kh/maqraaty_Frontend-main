@@ -428,7 +428,7 @@ beforeChange(e: any) {
         this.count = await data?.metaData?.count;
         this.totalPages = await data?.metaData?.totalPages
         this.total = await data?.metaData?.total
-        this.totalAmount = await data?.totalAmount[0]?.total;
+        this.totalAmount = await data?.totalAmount;
         this.loadingData = false
 
       },
