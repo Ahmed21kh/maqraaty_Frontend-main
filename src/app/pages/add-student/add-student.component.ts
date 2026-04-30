@@ -475,9 +475,9 @@ export class AddStudentComponent {
     console.log(this.myForm.value);
     if (this.myForm.value.has_relative == "نعم") {
 
-      this.arr_relative.controls.map(data => data.markAllAsTouched())
+      this.arr_relative.controls.forEach(data => data.markAllAsTouched())
     }else {
-      this.arr_relative.controls.map(data => data.clearValidators())
+      this.arr_relative.controls.forEach(data => data.clearValidators())
 
     }
     console.log(this.myForm.valid);
@@ -499,6 +499,7 @@ export class AddStudentComponent {
         },
         error: (err) => {
           this.msg.error(err.message);
+          this.loadingAdd = false;
         },
       });
     } else {
@@ -542,9 +543,9 @@ export class AddStudentComponent {
     this.myForm.controls.relative.markAsTouched();
     this.myForm.controls.study_year.markAsTouched();
     this.paymentForm.controls.amount.markAllAsTouched();
-    this.arr_phone_1.controls.map(data => data.markAllAsTouched())
-    this.arr_phone_2.controls.map(data => data.markAllAsTouched())
-    this.arr_phone_3.controls.map(data => data.markAllAsTouched())
+    this.arr_phone_1.controls.forEach(data => data.markAllAsTouched())
+    this.arr_phone_2.controls.forEach(data => data.markAllAsTouched())
+    this.arr_phone_3.controls.forEach(data => data.markAllAsTouched())
 
   }
   handleSubmitEdit() {
@@ -582,6 +583,7 @@ export class AddStudentComponent {
           },
           error: (err) => {
             this.msg.error(err.message);
+            this.loadingAEdit = false;
           },
         });
     } else {

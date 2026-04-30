@@ -634,6 +634,7 @@ export class AllStudentsComponent {
           },
           error: (err) => {
             this.msg.error(err.message);
+            this.loadingAEdit = false;
           },
         });
     } else {
