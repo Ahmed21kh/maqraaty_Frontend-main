@@ -1,6 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
+import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { Tone } from '../../../theme/tokens';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { ImageOnlyUploadDirective } from '../../shared/directives/image-only-upload.directive';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -25,7 +29,7 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -40,8 +44,8 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { ActivatedRoute } from '@angular/router';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from "../../pipes/empty.pipe";
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from "../../shared/pipes/empty.pipe";
 import { NzCardModule } from 'ng-zorro-antd/card';
 
 interface Student_Names {
@@ -87,8 +91,11 @@ interface ColumnItem {
     templateUrl: './student-payment-details.component.html',
     styleUrl: './student-payment-details.component.scss',
     imports: [
+    StudentSelectComponent,
+      StatusBadgeComponent,
+    ImageOnlyUploadDirective,
         NzGridModule,
-        BreadcrumbComponent,
+        PageHeaderComponent,
         NzTableModule,
         NzButtonModule,
         NzIconModule,
@@ -112,7 +119,7 @@ interface ColumnItem {
         NzCardModule
     ]
 })
-export class StudentPaymentDetailsComponent {
+export class StudentPaymentDetailsComponent implements OnChanges {
   isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -170,6 +177,15 @@ export class StudentPaymentDetailsComponent {
       listOfFilter: [],
       filterFn: null,
     },
+    {
+      name: 'حالة الدفع',
+      sortOrder: null,
+      sortFn: null,
+      sortDirections: [],
+      filterMultiple: false,
+      listOfFilter: [],
+      filterFn: null,
+    },
 
   ];
   pageSize:number = 100;
@@ -194,7 +210,7 @@ export class StudentPaymentDetailsComponent {
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService,
+    private appService: ApiService,
     private route:ActivatedRoute
     // private ngControl : NgControl
   ) {}
@@ -303,7 +319,6 @@ export class StudentPaymentDetailsComponent {
   }
 
   onChange(result: Date): void {
-    console.log('onChange: ', result);
     if (result !== null) {
       this.dateFilter = result.toISOString().split("T")[0]
       this.getDataOfPayments()
@@ -314,7 +329,7 @@ export class StudentPaymentDetailsComponent {
     }
   }
   async getDataOfPayments() {
-    const studentId = this.route.snapshot.paramMap.get('id')
+    const studentId = this.embeddedId ?? this.route.snapshot.paramMap.get('id')
     this.loadingData = true
     this.appService.getOnePaymentData(this.pageNumber,this.pageSize,studentId).subscribe({
       next: async(data) => {
@@ -330,14 +345,13 @@ export class StudentPaymentDetailsComponent {
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
   }
 
   async getStudentsName(){
-    this.appService.getStudents_names().subscribe({
+    this.appService.getStudents_names("active").subscribe({
       next:async(data)=>{
         this.students_Name = await data;
       },
@@ -379,38 +393,24 @@ export class StudentPaymentDetailsComponent {
   }
   getSubscriptionVal(){
    this.paymentForm.value.student == null? this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false}):this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-   console.log(this.paymentForm.value);
 
   this.paymentForm.valueChanges.subscribe((res)=>{
     this.subscriptionVal = this.students_Name.filter((d:any)=> d._id == res.student)[0]?.amount
-    console.log(this.subscriptionVal);
 
     if (this.subscriptionVal==null) {
      this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false})
-     console.log("null ====>",res);
-     console.log(this.paymentForm.value);
     } else {
      this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-     console.log(this.paymentForm.controls.amount.valid);
-     console.log(this.paymentForm.controls.amount.disabled);
 
-     console.log("not null ====>",res);
-     console.log(this.paymentForm.value);
     }
 
-   console.log(this.students_Name.filter((d:any)=> d._id == res.student));
 
   })
   }
   submit(data:FormGroup){
-    console.log(data.errors);
-    console.log(data.valid);
-    console.log(data.controls?.['amount'].valid);
     if (data.valid&&data.controls?.['amount'].valid) {
-    console.log(data.value);
     const { date , amount ,student} = data.value
     this.appService.addPayment({date,amount},student).subscribe({next:(data)=>{
-      console.log(data);
       this.msg.success("تم الدفع بنجاح")
       this.getDataOfPayments()
       this.resetData()
@@ -425,13 +425,32 @@ export class StudentPaymentDetailsComponent {
 
 
   }
+  /** Set when the account is embedded in another page (the subscriptions picker) instead of opened by route. */
+  @Input() embeddedId: string | null = null;
+
+  /** Payment against the student's monthly subscription: exempt, paid in full, or partly paid. */
+  paymentStatus(row: any): { label: string; tone: Tone } {
+    const student = row?.studentDetails;
+    if (student?.is_payment === 'نعم') return { label: 'معفى', tone: 'neutral' };
+    const due = Number(student?.amount);
+    const paid = Number(row?.amount);
+    if (!due || Number.isNaN(paid)) return { label: 'مدفوع', tone: 'success' };
+    return paid >= due ? { label: 'مدفوع', tone: 'success' } : { label: 'مدفوع جزئيا', tone: 'warning' };
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['embeddedId'] && !changes['embeddedId'].firstChange) {
+      this.pageNumber = 1;
+      this.getDataOfPayments();
+    }
+  }
+
   ngOnInit(): void {
     this.getDataOfPayments();
     this.getStudentsName()
     this.getSubscriptionVal()
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfPayments();
 
@@ -539,9 +558,7 @@ handleSubmitEdit() {
 
   }
   if (this.myForm.valid) {
-    console.log('Button ok clicked!');
 
-    console.log(this.myForm.value);
     this.loadingAEdit = true;
     this.appService
       .updateStudent(this.studentId, this.myForm.value)
@@ -552,7 +569,6 @@ handleSubmitEdit() {
       )
       .subscribe({
         next: (data) => {
-          console.log(data);
 
           this.msg.success('تم التحديث بنجاح');
           this.loadingAEdit = false;
@@ -572,7 +588,6 @@ handleSubmitEdit() {
 }
 
 handleCancel(): void {
-  console.log('Button cancel clicked!');
   this.isVisible = false;
   this.loadingAdd = false;
   this.loadingAEdit = false;
@@ -580,12 +595,10 @@ handleCancel(): void {
 }
 handleChange({ file, fileList }: NzUploadChangeParam): void {
   const status = file.status;
-  console.log(file);
   if (status !== 'uploading') {
-    console.log(file, fileList);
   }
   if (status === 'done') {
-    this.msg.success(`${file.name} file uploaded successfully.`);
+    this.msg.success('تم رفع الصورة بنجاح');
     this.myForm.setValue({
       image: file?.response?.path || null,
       name: this.myForm.value.name || null,
@@ -605,7 +618,7 @@ handleChange({ file, fileList }: NzUploadChangeParam): void {
       amount:this.myForm.value.amount || null
     });
   } else if (status === 'error') {
-    this.msg.error(`${file.name} file upload failed.`);
+    this.msg.error('فشل رفع الصورة');
   }
 }
 

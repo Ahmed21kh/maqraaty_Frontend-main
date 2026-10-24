@@ -1,6 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
+import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
+import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ImageOnlyUploadDirective } from '../../shared/directives/image-only-upload.directive';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -24,7 +29,8 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
+import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -36,9 +42,9 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from '../../pipes/empty.pipe';
-import { OrderByPipe } from "../../pipes/order-by/order-by.pipe";
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from '../../shared/pipes/empty.pipe';
+import { OrderByPipe } from "../../shared/pipes/order-by/order-by.pipe";
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -90,8 +96,12 @@ interface ColumnItem {
     templateUrl: './registered-students.component.html',
     styleUrl: './registered-students.component.scss',
     imports: [
+    StudentSelectComponent,
+    FilterBarComponent,
+    EditStudentsModalComponent,
+    ImageOnlyUploadDirective,
         NzGridModule,
-        BreadcrumbComponent,
+        PageHeaderComponent, StatCardComponent,
         NzTableModule,
         NzButtonModule,
         NzIconModule,
@@ -226,6 +236,8 @@ export class RegisteredStudentsComponent implements OnInit {
   students_Name: Student_Names[] = [];
   student_Data!:DataItem ;
   showStudent:boolean = false;
+  editingStudent = false;
+  @ViewChild(EditStudentsModalComponent) editForm?: EditStudentsModalComponent;
   nameContent!:string;
   loadingDelete:boolean = false;
   isDeActivate:boolean = false;
@@ -236,7 +248,7 @@ export class RegisteredStudentsComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService
+    private appService: ApiService
   ) {}
 
   passForm = this.fb.group({
@@ -295,16 +307,31 @@ export class RegisteredStudentsComponent implements OnInit {
   })
  openShowStudent(data:DataItem){
   // this.getOneUser(id).then(()=>{
+    this.editingStudent = false;
     this.student_Data = data;
     this.showStudent = true;
   // })
  }
- closeShowStudent(){
-  this.showStudent = false;
+  /** The details modal saved the student in place: leave edit mode, show the fresh data and refresh the list. */
+  onStudentSaved(): void {
+    this.editingStudent = false;
+    const id = this.student_Data?._id;
+    if (id) {
+      this.appService.getOne_student(id).subscribe({
+        next: (fresh) => (this.student_Data = { ...this.student_Data, ...fresh }),
+      });
+    }
+    this.getDataOfStudents();
+  }
+
+  closeShowStudent(){
+  this.editingStudent = false;
+    this.showStudent = false;
  }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name;
-  return student
+ // O(1) id→name lookup (index rebuilt only when the students list instance changes)
+ private readonly nameResolver = createNameResolver(() => this.students_Name);
+ getNameOfOneStudent(id: string) {
+   return this.nameResolver(id);
  }
 
   handleAdd(title:string) {
@@ -376,7 +403,6 @@ export class RegisteredStudentsComponent implements OnInit {
     if (this.searchPhone) {
       x += `&phone=${this.searchPhone?.trim()}`;
     }
-    console.log(x);
     this.getDataOfStudents(x);
   };
   async getDataOfStudents(x:any='') {
@@ -393,14 +419,13 @@ export class RegisteredStudentsComponent implements OnInit {
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
   }
 
   async getStudentsName(){
-    this.appService.getStudents_names().subscribe({
+    this.appService.getStudents_names("active").subscribe({
       next:async(data)=>{
         this.students_Name = await data;
       },
@@ -426,7 +451,6 @@ export class RegisteredStudentsComponent implements OnInit {
     this.getStudentsName()
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfStudents();
 
@@ -484,7 +508,6 @@ export class RegisteredStudentsComponent implements OnInit {
   handleActivate_deActivate_Student() {
     // this.isDeleteModal = false;
     this.loadingDeactivate = true;
-    console.log(this.activatedDaate);
 
     this.appService
       .activateStudent(this.studentId , 'in_active' , this.activatedDaate)
@@ -508,9 +531,6 @@ export class RegisteredStudentsComponent implements OnInit {
       });
   }
   handleOk(): void {
-    console.log(this.myForm.valid);
-    console.log(this.myForm.errors);
-    console.log(this.myForm.value);
     if (this.myForm.value.has_relative == "نعم") {
 
       this.arr_relative.controls.map(data => data.markAllAsTouched())
@@ -518,15 +538,11 @@ export class RegisteredStudentsComponent implements OnInit {
       this.arr_relative.controls.map(data => data.clearValidators())
 
     }
-    console.log(this.myForm.valid);
 
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-      console.log(this.myForm.value);
       this.loadingAdd = true;
       this.appService.addStudent(this.myForm.value).subscribe({
         next: async(res) => {
-          console.log(res);
         this.msg.success('تم الاضافة بنجاح');
         this.handleAddAttendance(res.data._id)
         this.getDataOfStudents().then(() => {
@@ -594,9 +610,7 @@ export class RegisteredStudentsComponent implements OnInit {
 
     }
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
 
-      console.log(this.myForm.value);
       this.isEdit = true;
       this.loadingAEdit = true;
       this.appService
@@ -608,7 +622,6 @@ export class RegisteredStudentsComponent implements OnInit {
         )
         .subscribe({
           next: (data) => {
-            console.log(data);
 
             this.msg.success('تم التحديث بنجاح');
             this.loadingAEdit = false;
@@ -628,7 +641,6 @@ export class RegisteredStudentsComponent implements OnInit {
   }
 
   handleCancel(): void {
-    console.log('Button cancel clicked!');
     this.isVisible = false;
     this.loadingAdd = false;
     this.loadingAEdit = false;
@@ -639,12 +651,10 @@ export class RegisteredStudentsComponent implements OnInit {
   }
   handleChange({ file, fileList }: NzUploadChangeParam): void {
     const status = file.status;
-    console.log(file);
     if (status !== 'uploading') {
-      console.log(file, fileList);
     }
     if (status === 'done') {
-      this.msg.success(`${file.name} file uploaded successfully.`);
+      this.msg.success('تم رفع الصورة بنجاح');
       this.myForm.setValue({
         image: file?.response?.path || null,
         name: this.myForm.value.name || null,
@@ -664,13 +674,12 @@ export class RegisteredStudentsComponent implements OnInit {
         amount:this.myForm.value.amount || null
       });
     } else if (status === 'error') {
-      this.msg.error(`${file.name} file upload failed.`);
+      this.msg.error('فشل رفع الصورة');
     }
   }
 
 
   handleAddAttendance(id:string){
-    console.log(id);
 
     let obj:AttendanceItem = {
       date:new Date().toUTCString(),
@@ -678,7 +687,6 @@ export class RegisteredStudentsComponent implements OnInit {
       attend_days_month:this.appService.getDatesAndDays()
     }
    this.appService.addAttendance(obj,id).subscribe({next:(res)=>{
-     console.log(res);
 
    },error:(err)=>{
     this.msg.error(err.message)

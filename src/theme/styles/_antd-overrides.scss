@@ -1,0 +1,928 @@
+// Brings every ng-zorro component onto the app tokens (_tokens.scss) so the whole system shares one
+// palette and responds to the Settings page (primary/secondary colour, radius, font, density).
+//
+// Why `html body` : light.css / dark.css are injected at runtime *after* this bundle, so rules of equal
+// specificity would lose. The two extra type selectors make these win without sprinkling !important.
+
+html body {
+  color: var(--app-text);
+  background: var(--app-bg);
+  font-size: var(--app-font-size);
+
+  a {
+    color: var(--app-primary);
+  }
+
+  // ------------------------------------------------------------------ typography
+  .ant-btn,
+  .ant-input,
+  .ant-input-number,
+  .ant-select,
+  .ant-picker,
+  .ant-table,
+  .ant-card,
+  .ant-form-item,
+  .ant-pagination,
+  .ant-dropdown-menu,
+  .ant-select-dropdown,
+  .ant-modal,
+  .ant-radio-wrapper,
+  .ant-checkbox-wrapper,
+  .ant-empty {
+    font-size: var(--app-font-size);
+  }
+
+  .ant-form-item-label > label,
+  .ant-card-head-title,
+  .ant-modal-title,
+  .ant-table,
+  .ant-descriptions-item-label {
+    color: var(--app-text);
+  }
+
+  .ant-empty-description,
+  .ant-form-item-extra,
+  .ant-typography.ant-typography-secondary {
+    color: var(--app-text-muted);
+  }
+
+  .ant-divider {
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  // ------------------------------------------------------------------ cards
+  .ant-card {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-color: var(--app-border);
+    border-radius: var(--app-radius);
+  }
+
+  .ant-card-bordered {
+    border-color: var(--app-border);
+  }
+
+  .ant-card-head {
+    color: var(--app-text);
+    border-bottom-color: var(--app-border);
+    border-radius: var(--app-radius) var(--app-radius) 0 0;
+  }
+
+  // ------------------------------------------------------------------ tables
+  // Light outline so the table's edge is visible against the page (esp. in the light theme).
+  .ant-table {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    overflow: hidden;
+  }
+
+  .ant-table-container {
+    border-color: var(--app-border);
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-thead > tr > td {
+    background: var(--app-surface-2);
+    color: var(--app-text);
+    border-bottom-color: var(--app-border);
+    padding: var(--app-cell-pad) 12px;
+  }
+
+  .ant-table-tbody > tr > td {
+    border-bottom-color: var(--app-border);
+    padding: var(--app-cell-pad) 12px;
+  }
+
+  // Sorted / hovered sortable columns: antd paints these with its own grey (a different shade from the
+  // rest of the header). Keep the header uniform and tint only on hover; sorted body cells stay plain.
+  .ant-table-thead > tr > th.ant-table-column-sort,
+  .ant-table-thead > tr > td.ant-table-column-sort {
+    background: var(--app-surface-2);
+  }
+
+  .ant-table-tbody > tr > td.ant-table-column-sort {
+    background: transparent;
+  }
+
+  .ant-table-tbody > tr.ant-table-row:hover > td.ant-table-column-sort {
+    background: var(--app-surface-2);
+  }
+
+  .ant-table-thead > tr > th.ant-table-column-has-sorters:hover,
+  .ant-table-thead > tr > th.ant-table-column-has-sorters.ant-table-column-sort:hover,
+  .ant-table-thead > tr > th.ant-table-filter-column:hover,
+  .ant-table-thead th.ant-table-column-has-sorters:hover::before {
+    background: color-mix(in srgb, var(--app-primary) 8%, var(--app-surface-2));
+  }
+
+  .ant-table-filter-trigger:hover {
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+  }
+
+  .ant-table-tbody > tr.ant-table-row:hover > td,
+  .ant-table-tbody > tr > td.ant-table-cell-row-hover {
+    background: var(--app-surface-2);
+  }
+
+  .ant-table-tbody > tr.ant-table-placeholder:hover > td {
+    background: var(--app-surface);
+  }
+
+  .ant-table-footer,
+  .ant-table-summary {
+    background: var(--app-surface-2);
+    color: var(--app-text);
+  }
+
+  .ant-table-column-sorter-up.active,
+  .ant-table-column-sorter-down.active,
+  .ant-table-filter-trigger.active {
+    color: var(--app-primary);
+  }
+
+  .ant-table-filter-dropdown {
+    background: var(--app-surface);
+    border-radius: var(--app-radius-sm);
+    box-shadow: var(--app-shadow-hover);
+
+    .ant-dropdown-menu {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .ant-table-filter-dropdown-btns {
+      border-top-color: var(--app-border);
+    }
+  }
+
+  // ------------------------------------------------------------------ pagination
+  .ant-pagination-item,
+  .ant-pagination-prev .ant-pagination-item-link,
+  .ant-pagination-next .ant-pagination-item-link {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    border-radius: var(--app-radius-control);
+
+    a {
+      color: var(--app-text);
+    }
+  }
+
+  .ant-pagination-item-active {
+    border-color: var(--app-primary);
+
+    a {
+      color: var(--app-primary);
+    }
+  }
+
+  .ant-pagination-item:hover,
+  .ant-pagination-prev:hover .ant-pagination-item-link,
+  .ant-pagination-next:hover .ant-pagination-item-link {
+    border-color: var(--app-primary);
+    a,
+    .anticon {
+      color: var(--app-primary);
+    }
+  }
+
+  // ------------------------------------------------------------------ form controls
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-picker,
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    background-color: var(--app-surface);
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-picker,
+  .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    border-radius: var(--app-radius-control);
+  }
+
+  .ant-input-number-input,
+  .ant-input-affix-wrapper > input.ant-input {
+    background: transparent;
+  }
+
+  .ant-input::placeholder,
+  .ant-input-number-input::placeholder,
+  .ant-picker-input > input::placeholder,
+  .ant-select-selection-placeholder {
+    color: var(--app-text-muted);
+  }
+
+  .ant-picker-input > input,
+  .ant-select-selection-item {
+    color: var(--app-text);
+  }
+
+  .ant-input-disabled,
+  .ant-input[disabled],
+  .ant-picker-disabled,
+  .ant-select-disabled:not(.ant-select-customize-input) .ant-select-selector {
+    background-color: var(--app-surface-2);
+    color: var(--app-text-muted);
+  }
+
+  .ant-input:hover,
+  .ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled):hover,
+  .ant-input-number:hover,
+  .ant-picker:hover,
+  .ant-select:not(.ant-select-disabled):not(.ant-select-customize-input):hover .ant-select-selector {
+    border-color: var(--app-primary-hover);
+  }
+
+  .ant-input:focus,
+  .ant-input-focused,
+  .ant-input-affix-wrapper-focused,
+  .ant-input-number-focused,
+  .ant-picker-focused,
+  // The select selectors carry the extra `.ant-select` class so they outweigh antd's own
+  // `.ant-select-focused:not(…).ant-select:not(…) .ant-select-selector` (5 classes) rule.
+  .ant-select.ant-select-focused:not(.ant-select-disabled):not(.ant-select-customize-input) .ant-select-selector,
+  .ant-select.ant-select-open:not(.ant-select-disabled):not(.ant-select-customize-input) .ant-select-selector,
+  .ant-input-number.ant-input-number-focused,
+  .ant-input-number-affix-wrapper-focused {
+    border-color: var(--app-primary);
+    box-shadow: 0 0 0 2px var(--app-primary-soft);
+  }
+
+  .ant-select-open:not(.ant-select-disabled) .ant-select-arrow {
+    color: var(--app-primary);
+  }
+
+  .ant-input-group-addon {
+    background: var(--app-surface-2);
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .ant-input-clear-icon,
+  .ant-select-arrow,
+  .ant-picker-suffix,
+  .ant-picker-clear {
+    color: var(--app-text-muted);
+  }
+
+  .ant-checkbox-inner,
+  .ant-radio-inner {
+    background-color: var(--app-surface);
+    border-color: var(--app-border);
+  }
+
+  // antd's hover / focus / checked rules for these use three classes, so the selectors below
+  // match that weight (html body + 3 classes) to be able to override the border colour too.
+  .ant-checkbox-wrapper .ant-checkbox-checked .ant-checkbox-inner,
+  .ant-radio-wrapper .ant-radio-checked .ant-radio-inner,
+  .ant-checkbox-checked .ant-checkbox-inner,
+  .ant-radio-checked .ant-radio-inner {
+    background-color: var(--app-primary);
+    border-color: var(--app-primary);
+  }
+
+  .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+  .ant-checkbox:hover .ant-checkbox-inner,
+  .ant-checkbox-input:focus + .ant-checkbox-inner,
+  .ant-radio-wrapper:hover .ant-radio-inner,
+  .ant-radio:hover .ant-radio-inner,
+  .ant-radio-input:focus + .ant-radio-inner {
+    border-color: var(--app-primary);
+  }
+
+  .ant-radio-input:focus + .ant-radio-inner {
+    box-shadow: 0 0 0 3px var(--app-primary-soft);
+  }
+
+  .ant-checkbox-checked::after {
+    border-color: var(--app-primary);
+  }
+
+  .ant-checkbox-checked .ant-checkbox-inner::after {
+    border-color: var(--app-on-primary);
+  }
+
+  .ant-radio-button-wrapper:hover,
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+    color: var(--app-primary);
+    border-color: var(--app-primary);
+  }
+
+  .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled)::before {
+    background-color: var(--app-primary);
+  }
+
+  .ant-radio-checked .ant-radio-inner::after {
+    background-color: var(--app-on-primary);
+  }
+
+  .ant-radio-checked::after {
+    border-color: var(--app-primary);
+  }
+
+  .ant-switch-checked {
+    background: var(--app-primary);
+  }
+
+  .ant-slider-track,
+  .ant-slider:hover .ant-slider-track {
+    background-color: var(--app-primary);
+  }
+
+  .ant-slider-handle {
+    border-color: var(--app-primary);
+  }
+
+  // ------------------------------------------------------------------ buttons
+  .ant-btn {
+    border-radius: var(--app-radius-control);
+  }
+
+  // Optical centring: Cairo's Arabic glyphs sit ~1–2px low inside a normal line box (measured on the rendered
+  // pixels: e.g. 6.75px above vs 4.75px below the word), so every button label is lifted by 1px.
+  .ant-btn > span:not(.anticon) {
+    position: relative;
+    top: -1px;
+  }
+
+  // "Default-looking" buttons. A plain `<button nz-button>` (no nzType) only gets `.ant-btn` — there is no
+  // `.ant-btn-default` class — so match every button that isn't one of the other kinds. `:where()` keeps
+  // the type exclusions out of the specificity, so utility classes and the hover rules still compete fairly.
+  .ant-btn:where(:not(.ant-btn-primary):not(.ant-btn-link):not(.ant-btn-text):not(.ant-btn-dangerous):not(.ant-btn-background-ghost)) {
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    color: var(--app-text);
+
+    &:hover:not([disabled]),
+    &:focus:not([disabled]) {
+      border-color: var(--app-primary);
+      color: var(--app-primary);
+      background: var(--app-surface);
+    }
+
+    &:active:not([disabled]) {
+      border-color: var(--app-primary-active);
+      color: var(--app-primary-active);
+    }
+  }
+
+  // Solid buttons: diagonal gradient from the primary colour towards a primary/secondary blend.
+  .ant-btn-primary {
+    background-color: var(--app-primary);
+    background-image: linear-gradient(135deg, var(--app-primary) 0%, color-mix(in srgb, var(--app-primary) 62%, var(--app-secondary)) 100%);
+    border-color: transparent;
+    color: var(--app-on-primary);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--app-primary) 35%, transparent);
+    transition: filter 0.2s, box-shadow 0.2s, transform 0.1s;
+
+    &:hover:not([disabled]),
+    &:focus:not([disabled]) {
+      background-image: linear-gradient(135deg, var(--app-primary) 0%, color-mix(in srgb, var(--app-primary) 62%, var(--app-secondary)) 100%);
+      border-color: transparent;
+      color: var(--app-on-primary);
+      filter: brightness(1.1);
+      box-shadow: 0 4px 14px color-mix(in srgb, var(--app-primary) 45%, transparent);
+    }
+
+    &:active:not([disabled]) {
+      filter: brightness(0.94);
+      transform: translateY(1px);
+    }
+
+    &[disabled] {
+      background-image: none;
+      background-color: var(--app-surface-2);
+      border-color: var(--app-border);
+      color: var(--app-text-muted);
+      box-shadow: none;
+    }
+  }
+
+  .ant-btn-link {
+    color: var(--app-primary);
+
+    &:hover:not([disabled]),
+    &:focus:not([disabled]) {
+      color: var(--app-primary-hover);
+    }
+
+    &:active:not([disabled]) {
+      color: var(--app-primary-active);
+    }
+  }
+
+  .ant-btn-text:hover:not([disabled]) {
+    background: var(--app-primary-soft);
+    color: var(--app-primary);
+  }
+
+  // ------------------------------------------------------------------ floating panels
+  .ant-select-dropdown,
+  .ant-picker-dropdown .ant-picker-panel-container,
+  .ant-dropdown-menu,
+  .ant-popover-inner,
+  .ant-cascader-dropdown {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  .ant-picker-panel,
+  .ant-picker-panel-container .ant-picker-header,
+  .ant-picker-panel-container .ant-picker-footer {
+    background: transparent;
+    border-color: var(--app-border);
+    color: var(--app-text);
+  }
+
+  .ant-picker-header button,
+  .ant-picker-content th,
+  .ant-picker-cell {
+    color: var(--app-text-muted);
+  }
+
+  .ant-picker-cell-in-view {
+    color: var(--app-text);
+  }
+
+  .ant-picker-cell-disabled {
+    color: var(--app-text-muted);
+    opacity: 0.5;
+  }
+
+  .ant-picker-cell:hover:not(.ant-picker-cell-in-view) .ant-picker-cell-inner,
+  .ant-picker-cell:hover:not(.ant-picker-cell-selected):not(.ant-picker-cell-range-start):not(.ant-picker-cell-range-end):not(.ant-picker-cell-range-hover-start):not(.ant-picker-cell-range-hover-end) .ant-picker-cell-inner {
+    background: var(--app-surface-2);
+  }
+
+  .ant-picker-cell-in-view.ant-picker-cell-selected .ant-picker-cell-inner,
+  .ant-picker-cell-in-view.ant-picker-cell-range-start .ant-picker-cell-inner,
+  .ant-picker-cell-in-view.ant-picker-cell-range-end .ant-picker-cell-inner {
+    background: var(--app-primary);
+    color: var(--app-on-primary);
+  }
+
+  .ant-picker-cell-in-view.ant-picker-cell-today .ant-picker-cell-inner::before {
+    border-color: var(--app-primary);
+  }
+
+  .ant-picker-cell-in-view.ant-picker-cell-in-range::before {
+    background: var(--app-primary-soft);
+  }
+
+  .ant-select-item {
+    color: var(--app-text);
+  }
+
+  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+    background: var(--app-surface-2);
+  }
+
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+    background: var(--app-primary-soft);
+    color: var(--app-text);
+    font-weight: 600;
+  }
+
+  .ant-dropdown-menu-item,
+  .ant-dropdown-menu-submenu-title {
+    color: var(--app-text);
+
+    &:hover {
+      background: var(--app-surface-2);
+    }
+  }
+
+  .ant-popover-arrow-content {
+    --antd-arrow-background-color: var(--app-surface);
+  }
+
+  .ant-tooltip-inner {
+    border-radius: var(--app-radius-sm);
+  }
+
+  // ------------------------------------------------------------------ modals
+  .ant-modal-mask {
+    backdrop-filter: blur(4px);
+    background: rgba(10, 18, 32, 0.55);
+  }
+
+  .ant-modal .ant-modal-content {
+    // One surface for header, body and footer.
+    background: var(--app-surface);
+    color: var(--app-text);
+    padding: 0;
+    overflow: hidden;
+    border-radius: var(--app-radius-lg);
+    border: 1px solid var(--app-border);
+    box-shadow: 0 24px 64px rgba(10, 18, 32, 0.35);
+  }
+
+  .ant-modal .ant-modal-header {
+    margin: 0;
+    padding: 18px 24px;
+    background: var(--app-surface-2);
+    border-bottom: 1px solid var(--app-border);
+    border-radius: 0;
+
+    .ant-modal-title {
+      font-size: calc(var(--app-font-size) + 4px);
+      font-weight: 700;
+    }
+  }
+
+  .ant-modal .ant-modal-body {
+    padding: 24px;
+    background: transparent;
+    color: var(--app-text);
+  }
+
+  .ant-modal .ant-modal-footer {
+    margin: 0;
+    padding: 14px 24px;
+    background: var(--app-surface-2);
+    border-top: 1px solid var(--app-border);
+    display: flex;
+    gap: 8px;
+    // Buttons sit on the physical left. In an RTL modal "flex-end" is the left edge, in LTR it is flex-start.
+    justify-content: flex-start;
+  }
+
+  .ant-modal-wrap-rtl .ant-modal .ant-modal-footer,
+  .ant-modal-rtl .ant-modal-footer,
+  [dir='rtl'] .ant-modal .ant-modal-footer {
+    justify-content: flex-end;
+  }
+
+  // Close button: keep antd's own positioning model, just give it a roomy rounded hit area.
+  .ant-modal .ant-modal-close {
+    top: 12px;
+    right: 14px;
+    left: auto;
+    inset-inline-end: auto;
+    padding: 0;
+    border-radius: var(--app-radius-control);
+    color: var(--app-text-muted);
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--app-primary-soft);
+      color: var(--app-primary);
+    }
+
+    .ant-modal-close-x {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      line-height: 36px;
+    }
+  }
+
+  .ant-modal-wrap-rtl .ant-modal .ant-modal-close,
+  [dir='rtl'] .ant-modal .ant-modal-close {
+    right: auto;
+    left: 14px;
+  }
+
+  .ant-modal-confirm .ant-modal-body {
+    padding: 28px 28px 8px;
+  }
+
+  // Confirm dialogs (Modal.confirm) keep their buttons in this container instead of a footer.
+  .ant-modal-confirm .ant-modal-confirm-btns {
+    float: left;
+    display: flex;
+    gap: 8px;
+
+    .ant-btn + .ant-btn {
+      margin: 0;
+    }
+  }
+
+  .ant-modal-confirm-title,
+  .ant-modal-confirm-content {
+    color: var(--app-text);
+  }
+
+  // ------------------------------------------------------------------ components inside a modal
+  // The dark antd stylesheet re-colours cards, tables, pickers… *inside* `.ant-modal` to its own greys
+  // (#1f1f1f / #272727), which no longer match the tokenised modal surface. These repeat the page-level
+  // rules with the `.ant-modal` scope so they keep the same specificity and win.
+  .ant-modal .ant-card,
+  .ant-modal .ant-collapse-content,
+  .ant-modal .ant-anchor-wrapper,
+  .ant-modal .ant-picker-clear,
+  .ant-modal .ant-slider-handle {
+    background-color: var(--app-surface-2);
+  }
+
+  .ant-modal .ant-table,
+  .ant-modal .ant-picker-calendar-full,
+  .ant-modal .ant-picker-calendar-full .ant-picker-panel,
+  .ant-modal .ant-table tbody > tr > td.ant-table-cell-fix-left,
+  .ant-modal .ant-table tbody > tr > td.ant-table-cell-fix-right {
+    background-color: var(--app-surface);
+  }
+
+  .ant-modal .ant-table thead > tr > th,
+  .ant-modal .ant-table.ant-table-small thead > tr > th {
+    background-color: var(--app-surface-2);
+    border-bottom: 1px solid var(--app-border);
+  }
+
+  .ant-modal .ant-table tbody > tr.ant-table-row:hover > td,
+  .ant-modal tr.ant-table-expanded-row > td,
+  .ant-modal tr.ant-table-expanded-row:hover > td {
+    background: var(--app-surface-2);
+  }
+
+  .ant-modal .ant-table .ant-table-filter-trigger-container-open {
+    background-color: var(--app-primary-soft);
+  }
+
+  // ------------------------------------------------------------------ misc components
+  .ant-tabs-tab:hover,
+  .ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: var(--app-primary);
+  }
+
+  .ant-tabs-ink-bar {
+    background: var(--app-primary);
+  }
+
+  .ant-spin-dot-item {
+    background-color: var(--app-primary);
+  }
+
+  .ant-spin {
+    color: var(--app-primary);
+  }
+
+  .ant-progress-bg {
+    background-color: var(--app-primary);
+  }
+
+  .ant-progress-text {
+    color: var(--app-text);
+  }
+
+  // Tags are deliberately two steps smaller than body text (12px at the default 14px).
+  .ant-tag {
+    border-radius: var(--app-radius-sm);
+    font-size: calc(var(--app-font-size) - 2px);
+    line-height: 20px;
+  }
+
+  // ------------------------------------------------------------------ upload
+  .ant-upload.ant-upload-drag,
+  .ant-upload.ant-upload-select-picture-card {
+    background: var(--app-surface-2);
+    border: 1px dashed var(--app-border);
+    border-radius: var(--app-radius);
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .ant-upload.ant-upload-drag:not(.ant-upload-disabled):hover,
+  .ant-upload.ant-upload-drag.ant-upload-drag-hover:not(.ant-upload-disabled),
+  .ant-upload.ant-upload-select-picture-card:not(.ant-upload-disabled):hover {
+    border-color: var(--app-primary);
+    background: var(--app-primary-soft);
+  }
+
+  // Compact (short) dropzone — still full width so it lines up with the other form fields.
+  .ant-upload.ant-upload-drag .ant-upload-btn {
+    padding: 10px 0;
+  }
+
+  .ant-upload.ant-upload-drag p.ant-upload-drag-icon {
+    margin-bottom: 2px;
+
+    .anticon {
+      font-size: 30px;
+    }
+  }
+
+  .ant-upload.ant-upload-drag p.ant-upload-text {
+    margin: 0;
+    font-size: var(--app-font-size);
+  }
+
+  .ant-upload.ant-upload-drag .ant-upload-drag-container {
+    color: var(--app-text);
+  }
+
+  .ant-upload.ant-upload-drag p.ant-upload-drag-icon .anticon,
+  .ant-upload.ant-upload-select-picture-card .anticon {
+    color: var(--app-primary);
+  }
+
+  .ant-upload.ant-upload-drag p.ant-upload-text {
+    color: var(--app-text);
+  }
+
+  .ant-upload.ant-upload-drag p.ant-upload-hint {
+    color: var(--app-text-muted);
+  }
+
+  .ant-upload-list-item,
+  .ant-upload-list-picture-card .ant-upload-list-item,
+  .ant-upload-list-picture .ant-upload-list-item {
+    border-color: var(--app-border);
+    border-radius: var(--app-radius-sm);
+    background: var(--app-surface);
+  }
+
+  .ant-upload-list-item-name,
+  .ant-upload-list-item-card-actions .anticon {
+    color: var(--app-text);
+  }
+
+  .ant-upload-list-item:hover .ant-upload-list-item-info {
+    background-color: var(--app-surface-2);
+  }
+
+  .ant-upload-list-item-error,
+  .ant-upload-list-item-error .ant-upload-list-item-name {
+    border-color: var(--app-danger);
+    color: var(--app-danger);
+  }
+
+  .ant-message-notice-content {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-radius: var(--app-radius);
+    box-shadow: var(--app-shadow-hover);
+  }
+
+  .ant-segmented {
+    background: var(--app-surface-2);
+    color: var(--app-text);
+    border-radius: var(--app-radius-control);
+  }
+
+  .ant-segmented-item-selected {
+    background: var(--app-surface);
+    color: var(--app-primary);
+    border-radius: calc(var(--app-radius-control) - 2px);
+    box-shadow: var(--app-shadow);
+  }
+
+  .ant-skeleton-element .ant-skeleton-button,
+  .ant-skeleton-element .ant-skeleton-input,
+  .ant-skeleton-element .ant-skeleton-image {
+    border-radius: var(--app-radius-sm);
+  }
+
+  // ------------------------------------------------------------------ carousel arrows (month picker)
+  // slick-theme draws the arrows as a font glyph with a fixed black/grey colour. Use the primary colour,
+  // dim the one that can't be used any more, and brighten on hover.
+  .slick-prev:before,
+  .slick-next:before {
+    color: var(--app-primary) !important;
+    opacity: 0.85;
+    font-size: 24px;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .slick-prev:hover:before,
+  .slick-prev:focus:before,
+  .slick-next:hover:before,
+  .slick-next:focus:before {
+    opacity: 1 !important;
+    transform: scale(1.12);
+  }
+
+  .slick-prev.slick-disabled:before,
+  .slick-next.slick-disabled:before {
+    color: var(--app-text-muted) !important;
+    opacity: 0.35 !important;
+    transform: none;
+  }
+
+  // ------------------------------------------------------------------ sidebar flyout (collapsed rail)
+  // The popup is rendered in the overlay container, outside the sidebar, so it gets the same
+  // gradient colours explicitly (otherwise the antd stylesheet paints it white).
+  .ant-menu-submenu-popup.ant-menu-dark .ant-menu-sub,
+  .ant-menu-submenu-popup .ant-menu-vertical.ant-menu-sub {
+    background: var(--app-sidebar-via);
+    border-radius: var(--app-radius);
+    padding: 6px;
+    box-shadow: var(--app-shadow-hover);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    .ant-menu-item {
+      color: rgba(255, 255, 255, 0.88);
+      border-radius: var(--app-sidebar-item-radius);
+      margin: 2px 0;
+      height: 40px;
+      line-height: 40px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+      }
+    }
+
+    .ant-menu-item-selected {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+    }
+  }
+}
+
+// Hint added under every image upload by ImageOnlyUploadDirective.
+.upload-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--app-text-muted);
+}
+
+// ---------------------------------------------------------------- shared surface helper
+.app-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  box-shadow: var(--app-shadow);
+}
+
+// ---------------------------------------------------------------- settings-driven variants
+html[data-motion='reduced'] *,
+html[data-motion='reduced'] *::before,
+html[data-motion='reduced'] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+// Header: floating card (default) or flat full-width bar.
+html[data-header='flat'] app-header {
+  padding: 0;
+  top: 0;
+}
+
+html[data-header='flat'] app-header > header {
+  border-radius: 0;
+  border-width: 0 0 1px;
+  box-shadow: none;
+}
+
+// Phones: wide tables scroll sideways instead of crushing their columns.
+@media (max-width: 767px) {
+  html body .ant-table-content {
+    overflow-x: auto;
+
+    > table {
+      min-width: 720px;
+    }
+  }
+}
+
+/* the browser's own clear (x) on type=search duplicated the search-bar's clear button */
+html body input[type='search']::-webkit-search-cancel-button,
+html body input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* bottom filter drawer: same surface as the modals, rounded top, no close icon (backdrop tap / button closes) */
+html body .filter-drawer {
+  .ant-drawer-content-wrapper {
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+  }
+  .ant-drawer-content {
+    direction: rtl; // title on the right, like the modals
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-radius: 22px 22px 0 0;
+    overflow: hidden;
+  }
+  .ant-drawer-header {
+    background: var(--app-surface);
+    border-bottom: 1px solid var(--app-border);
+    padding-block: 16px;
+  }
+  .ant-drawer-title {
+    color: var(--app-text);
+    font-weight: 600;
+    text-align: start;
+  }
+  .ant-drawer-body {
+    background: var(--app-surface);
+  }
+}

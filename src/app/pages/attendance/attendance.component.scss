@@ -1,7 +1,7 @@
 .attendance_table
 {
   margin:50px auto;
-  padding-inline: 20px;
+  padding-inline: 0;
 }
 ::ng-deep .attendance_table.ant-table-column-title {
    position: relative;
@@ -65,9 +65,7 @@
   word-wrap: break-word;
   direction: rtl !important;
 }
-::ng-deep.slick-prev:before,::ng-deep.slick-next:before {
-  color: black !important;
-}
+// slick arrow colours come from the theme (theme/styles/_antd-overrides.scss)
 
 ::ng-deep.carousel {
   padding-inline: 20px !important;

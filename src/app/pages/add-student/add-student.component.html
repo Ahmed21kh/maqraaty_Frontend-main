@@ -1,7 +1,7 @@
 <div class="">
-  <app-breadcrumb></app-breadcrumb>
-  <div class="mt-8">
-    <form [autocomplete]="true" dir="rtl" [formGroup]="myForm">
+  <app-page-header></app-page-header>
+  <div class="app-card p-6">
+    <form [autocomplete]="true" dir="rtl" [formGroup]="myForm" (ngSubmit)="handleOk()">
       <div nz-row [nzGutter]="[24, 18]" class="relative overflow-hidden">
         <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
           <nz-form-label
@@ -38,9 +38,9 @@
           </nz-form-label>
           <input [nzSize]="'large'" class="!rounded-md" nz-input placeholder="ادخل الاسم " formControlName="name" />
           @if (f['name'].errors?.['required'] && f['name'].touched) {
-          <p style="color: red">الاسم مطلوب</p>
+          <p style="color: var(--app-danger)">الاسم مطلوب</p>
           } @else if (f['name'].errors?.['minlength'] && f['name'].touched) {
-          <p style="color: red">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+          <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
           } @else {
           <p></p>
           }
@@ -58,9 +58,9 @@
             formControlName="age"
           />
           @if (f['age'].errors?.['required'] && f['age'].touched) {
-          <p style="color: red">السن مطلوب</p>
+          <p style="color: var(--app-danger)">السن مطلوب</p>
           } @else if (f['age'].errors?.['minlength'] && f['age'].touched) {
-          <p style="color: red">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+          <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
           } @else {
           <p></p>
           }
@@ -79,10 +79,10 @@
           <!-- <nz-date-picker nzMode="year" class=" w-full" nzPlaceHolder="ادخل السنة الدراسية " formControlName="study_year" ></nz-date-picker> -->
           @if (f['study_year'].errors?.['required'] && f['study_year'].touched)
           {
-          <p style="color: red">السنة الدراسية مطلوبة</p>
+          <p style="color: var(--app-danger)">السنة الدراسية مطلوبة</p>
           } @else if (f['study_year'].errors?.['minlength'] &&
           f['study_year'].touched) {
-          <p style="color: red">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+          <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
           } @else {
           <p></p>
           }
@@ -117,6 +117,7 @@
                 [nzSize]="'large'"
                 (click)="handleAdd('phone_1')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -134,6 +135,7 @@
               [nzSize]="'large'"
                 (click)="handleRemove($index, 'phone_1')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -148,11 +150,11 @@
               }
             </div>
             @if (item.errors?.['required'] && item.touched) {
-            <p style="color: red">رقم الموبايل مطلوب</p>
+            <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
             }@else if ((item.errors?.['pattern']) && item.touched) {
-            <p style="color: red">رقم الموبايل غير صحيح</p>
+            <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
             }@else if ((item.errors?.['min']) && item.touched) {
-            <p style="color: red">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+            <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
             } @else {
             <p></p>
             } }
@@ -185,6 +187,7 @@
               [nzSize]="'large'"
                 (click)="handleAdd('phone_2')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -202,6 +205,7 @@
               [nzSize]="'large'"
                 (click)="handleRemove($index, 'phone_2')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -216,11 +220,11 @@
               }
             </div>
             @if (item.errors?.['required'] && item.touched) {
-            <p style="color: red">رقم الموبايل مطلوب</p>
+            <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
             }@else if ((item.errors?.['pattern']) && item.touched) {
-            <p style="color: red">رقم الموبايل غير صحيح</p>
+            <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
             }@else if ((item.errors?.['min']) && item.touched) {
-            <p style="color: red">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+            <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
             } @else {
             <p></p>
             } }
@@ -253,6 +257,7 @@
               [nzSize]="'large'"
                 (click)="handleAdd('phone_3')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -270,6 +275,7 @@
               [nzSize]="'large'"
                 (click)="handleRemove($index, 'phone_3')"
                 nz-button
+                type="button"
                 nzType="primary"
                 style="
                   border-radius: 15px;
@@ -284,11 +290,11 @@
               }
             </div>
             @if (item.errors?.['required'] && item.touched) {
-            <p style="color: red">رقم الموبايل مطلوب</p>
+            <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
             }@else if ((item.errors?.['pattern']) && item.touched) {
-            <p style="color: red">رقم الموبايل غير صحيح</p>
+            <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
             }@else if ((item.errors?.['min']) && item.touched) {
-            <p style="color: red">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+            <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
             } @else {
             <p></p>
             } }
@@ -308,9 +314,9 @@
             formControlName="landline"
           />
           @if (f['landline'].errors?.['required'] && f['landline'].touched) {
-          <p style="color: red">التليفون الارضي مطلوب</p>
+          <p style="color: var(--app-danger)">التليفون الارضي مطلوب</p>
           } @else if (f['landline'].errors?.['min'] && f['landline'].touched) {
-          <p style="color: red">
+          <p style="color: var(--app-danger)">
             التليفون الارضي يجب ان يحتوي علي الاقل علي ثمانية ارقام
           </p>
           } @else {
@@ -329,9 +335,9 @@
           ></nz-date-picker>
 
           @if (f['date'].errors?.['required'] && f['date'].touched) {
-          <p style="color: red">التاريخ مطلوب</p>
+          <p style="color: var(--app-danger)">التاريخ مطلوب</p>
           } @else if (f['date'].errors?.['minlength'] && f['date'].touched) {
-          <p style="color: red">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+          <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
           } @else {
           <p></p>
           }
@@ -345,7 +351,7 @@
             <label nz-radio nzValue="لا">لا</label>
           </nz-radio-group>
           @if (f['is_Azhar'].errors?.['required'] && f['is_Azhar'].touched) {
-          <p style="color: red">هذا الحقل مطلوب</p>
+          <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
           } @else {
           <p></p>
           }
@@ -360,7 +366,7 @@
           </nz-radio-group>
           @if (f['has_relative'].errors?.['required'] &&
           f['has_relative'].touched) {
-          <p style="color: red">هذا الحقل مطلوب</p>
+          <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
           } @else {
           <p></p>
           } @if (f['has_relative'].value == 'نعم') {
@@ -386,28 +392,12 @@
                   placeholder="ادخل رقم الموبايل "
                   [formControlName]="$index"
                 /> -->
-                <nz-select
-                 [nzSize]="'large'"
-                  nzShowSearch
-                  nzAllowClear
-                  nzPlaceHolder="اختر شخص"
-                  class="w-full !rounded-md"
-                  [id]="$index"
-                  [formControlName]="$index"
-                >
-                  @for (item of students_Name ; track $index) {
-
-                  <nz-option
-                    [nzKey]="item._id"
-                    [nzLabel]="item.name"
-                    [nzValue]="item._id"
-                  ></nz-option>
-                  }@empty { }
-                </nz-select>
+                <app-student-select scope="" placeholder="اختر شخص" size="large" [formControlName]="$index" />
                 @if ($index == 0) {
                 <button
                   (click)="handleAdd('relative')"
                   nz-button
+                  type="button"
                   nzType="primary"
                   style="
                     border-radius: 15px;
@@ -424,6 +414,7 @@
                 <button
                   (click)="handleRemove($index, 'relative')"
                   nz-button
+                  type="button"
                   nzType="primary"
                   style="
                     border-radius: 15px;
@@ -438,9 +429,9 @@
                 }
               </div>
               @if (item.errors?.['required'] && item.touched) {
-              <p style="color: red">الاسم مطلوب</p>
+              <p style="color: var(--app-danger)">الاسم مطلوب</p>
               }@else if ((item.errors?.['min']) && item.touched) {
-              <p style="color: red">الاسم يجب ان يكون علي الاقل 4 احرف</p>
+              <p style="color: var(--app-danger)">الاسم يجب ان يكون علي الاقل 4 احرف</p>
               } @else {
               <p></p>
               } }
@@ -462,7 +453,7 @@
               </nz-radio-group>
               @if (f['is_payment'].errors?.['required'] &&
               f['is_payment'].touched) {
-              <p style="color: red">هذا الحقل مطلوب</p>
+              <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
               } @else {
               <p></p>
               }
@@ -481,7 +472,7 @@
               />
 
               @if (pf['amount'].errors?.['required'] && pf['amount'].touched) {
-              <p style="color: red">المصروفات مطلوبة</p>
+              <p style="color: var(--app-danger)">المصروفات مطلوبة</p>
               } @else {
               <p></p>
               } }
@@ -503,7 +494,7 @@
             [rows]="5"
           ></textarea>
           @if (f['address'].errors?.['required'] && f['address'].touched) {
-          <p style="color: red">العنوان مطلوب</p>
+          <p style="color: var(--app-danger)">العنوان مطلوب</p>
           } @else {
           <p></p>
           }
@@ -585,17 +576,18 @@
               >
                 <button
                   nz-button
+                  type="button"
                   nzType="primary"
                   style="display: flex; align-items: center; gap: 10px"
                 >
                   <span nz-icon nzType="upload"></span>
-                  Click to Upload
+                  رفع صورة
                 </button>
               </nz-upload>
             </div>
           </div>
           } @if (f['name'].errors?.['required'] && f['name'].touched) {
-          <p style="color: red">الصورة مطلوب</p>
+          <p style="color: var(--app-danger)">الصورة مطلوب</p>
           } @else {
           <p></p>
           }
@@ -614,6 +606,7 @@
         <button
           (click)="handleCancel()"
           nz-button
+          type="button"
           [nzSize]="'large'"
           nzType="default"
           [disabled]="loadingAdd || loadingAEdit"
@@ -630,8 +623,8 @@
 
         <button
         [nzSize]="'large'"
-          (click)="handleOk()"
           nz-button
+          type="submit"
           [nzLoading]="loadingAdd"
           nzType="primary"
           style="
@@ -648,6 +641,7 @@
         <button
           (click)="handleSubmitEdit()"
           nz-button
+          type="button"
           [nzLoading]="loadingAEdit"
           nzType="primary"
           style="

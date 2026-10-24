@@ -1,11 +1,17 @@
+import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
+import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
+import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  inject,
   OnInit,
+  signal,
+  ViewChild,
 } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -29,7 +35,7 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -42,9 +48,9 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from '../../pipes/empty.pipe';
-import { OrderByPipe } from '../../pipes/order-by/order-by.pipe';
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from '../../shared/pipes/empty.pipe';
+import { OrderByPipe } from '../../shared/pipes/order-by/order-by.pipe';
 import * as datefn from 'date-fns';
 import { ar, arEG, enCA } from 'date-fns/locale';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
@@ -52,28 +58,14 @@ import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
 import { NzPopoverModule } from 'ng-zorro-antd/popover';
 import { SlickCarouselModule } from 'ngx-slick-carousel';
-import moment from 'moment';
 import { NzCardModule } from 'ng-zorro-antd/card';
-interface StudentItem {
-  _id: string;
-  code: number;
-  name: string;
-  image: string;
-  phone_1: string[];
-  phone_2: string[];
-  phone_3: string[];
-  age: number;
-  study_year: string;
-  has_relative: string;
-  relative: string[];
-  is_payment: string;
-  is_Azhar: string;
-  landline: string;
-  address: string;
-  notes: string;
-  date: Date;
-  amount: number;
-}
+import { StudentItem } from '../../core/models/app.model';
+import { WhatsappSocketService } from '../../core/whatsapp/whatsapp-socket.service';
+
+
+/** Months 1–12 for the month picker. */
+const MONTH_NUMBERS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 interface DataItem {
   _id: string;
   attend_days_month: [];
@@ -81,16 +73,12 @@ interface DataItem {
   student: string;
   status: string;
   date: string;
-  studentDetails: StudentItem;
+  studentDetails:StudentItem;
 }
 interface DatesObject {
   day: string;
   date: string;
   status: string;
-}
-interface Student_Names {
-  _id: string;
-  name: string;
 }
 
 interface ColumnItem {
@@ -110,8 +98,11 @@ interface ColumnItem {
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
   imports: [
+    MonthCarouselComponent,
+    FilterBarComponent,
+    EditStudentsModalComponent,
     NzGridModule,
-    BreadcrumbComponent,
+    PageHeaderComponent,
     NzTableModule,
     NzButtonModule,
     NzIconModule,
@@ -140,7 +131,7 @@ interface ColumnItem {
     NzCardModule
   ],
 })
-export class AttendanceComponent {
+export class AttendanceComponent implements OnInit {
   isVisible = false;
   isEdit = false;
   searchName: string = '';
@@ -171,6 +162,15 @@ export class AttendanceComponent {
       filterMultiple: true,
       listOfFilter: [],
       filterFn: null,
+    },
+    {
+      name: 'رقم الهاتف',
+      sortOrder: null,
+      sortFn: (a: DataItem, b: DataItem) => a.studentDetails.phone_1.length - b.studentDetails.phone_1.length,
+      sortDirections: ['descend', null],
+      listOfFilter: [],
+      filterFn: null,
+      filterMultiple: true,
     },
     {
       name: 'التاريخ',
@@ -209,9 +209,11 @@ export class AttendanceComponent {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
+  students_Name = (this.appService.ensureActiveNames(), this.appService.activeStudentsName);
   student_Data!: StudentItem;
   showStudent: boolean = false;
+  editingStudent = false;
+  @ViewChild(EditStudentsModalComponent) editForm?: EditStudentsModalComponent;
   nameContent!: string;
   dateFilter!: string;
   editModal: boolean = false;
@@ -227,13 +229,21 @@ export class AttendanceComponent {
   radioVal: string = '_';
   listofMonths!: any;
   activeMonth = new Date().getMonth() + 1;
+  /** Year being viewed in the attendance modal (the records span several years). */
+  activeYear = new Date().getFullYear();
+  availableYears: number[] = [new Date().getFullYear()];
+  /** Name shown in the modal title (the update response does not carry studentDetails). */
+  modalStudentName = '';
   allMonths!: any[];
-  visible: boolean = false
+  visible: boolean = false;
+  // query-string suffix appended to the API url; must start as "" (an initial `{}` became "[object Object]" and broke `limit`)
+  readonly searchFilter = signal<string>("");
   popOverVisible: Map<string, boolean> = new Map();
+  private readonly whatsappService = inject(WhatsappSocketService);
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService,
+    private appService: ApiService,
     private cd: ChangeDetectorRef
   ) {}
 
@@ -251,28 +261,50 @@ export class AttendanceComponent {
     slidesToScroll: 2,
     infinite: false,
     rtl: true,
-  };
+  }
+
+  @ViewChild('slickModal') slickModal: any;
+
   slickInit(e: any) {
-    console.log('slick initialized');
+    if (this.activeMonth) {
+      this.centerMonth(this.activeMonth);
+    }
+  }
+
+  private centerMonth(month: any) {
+    const index = this.listofMonths.indexOf(month);
+    if (index === -1) return;
+
+    const slidesToShow = this.slideConfig.slidesToShow;
+    const centerOffset = Math.floor(slidesToShow / 2);
+
+    let targetIndex = index - centerOffset;
+
+    // clamp so we don't scroll past the start
+    if (targetIndex < 0) targetIndex = 0;
+
+    // clamp so we don't scroll past the end
+    const maxIndex = this.listofMonths.length - slidesToShow;
+    if (targetIndex > maxIndex) targetIndex = Math.max(maxIndex, 0);
+
+    // slight delay ensures slick has fully initialized before programmatic scroll
+    setTimeout(() => {
+      this.slickModal?.slickGoTo(targetIndex);
+    }, 0);
   }
 
   breakpoint(e: any) {
-    console.log('breakpoint');
   }
 
   afterChange(e: any) {
-    console.log('afterChange');
   }
 
   beforeChange(e: any) {
-    console.log('beforeChange');
   }
 
   onTagClick(event: boolean, id: any) {
-    console.log(event);
     this.attendId = id;
     this.popOverVisible.set(id, event);
-    console.log(this.popOverVisible);
 
   }
   handleSearchQuery() {
@@ -289,13 +321,12 @@ export class AttendanceComponent {
     if (this.dateFilter) {
       x += `&date=${this.dateFilter}`;
     }
-    console.log(x);
+    this.searchFilter.set(x);
     this.loadingSearch = true;
     this.appService
       .getAttendanceData(this.pageNumber, this.pageSize, x)
       .subscribe({
         next: async (data: any) => {
-          console.log(data?.data);
           this.listOfData = await data?.data;
           this.count = await data?.metaData?.count;
           this.totalPages = await data?.metaData?.totalPages;
@@ -325,24 +356,47 @@ export class AttendanceComponent {
     );
   }
   handleCompareDate(date: any, status: string, data: any) {
-    console.log({ name: data.studentDetails.name, status: status, date: date });
 
     if (
       new Date(date).toLocaleDateString() ==
       this.dateAttendance.toLocaleDateString()
     ) {
-      console.log('Date is equal date now');
       return status;
     }
     return '_';
   }
 
-  changeStatusOfAttendance(e: any, data: any, date: any) {
-    // console.log(data?.attend_days_month);
-    // console.log(e);
+  confirmSendAlert(data: any): void {
+    this.studentId = data?._id;
+    let phoneList = [];
+    const studentDetails = data;
+    const name = studentDetails?.name || '';
+    const motherPhone = studentDetails?.phone_2?.[0] || undefined;
+    const fatherPhone = studentDetails?.phone_3?.[0] || undefined;
+    let message = `السلام عليكم ورحمة الله وبركاته.
+
+نفيدكم بأن ${name} لم يحضر اليوم.
+نرجو منكم المتابعة والحرص على انتظام الحضور، وجزاكم الله خيرًا.
+مقرأة الإمام الشافعي`
+    if(motherPhone) {
+      const phone = motherPhone?.trim();
+       phoneList.push(phone)
+    }
+
+    if(fatherPhone) {
+      const phone = fatherPhone?.trim();
+       phoneList.push(phone)
+    }
+    this.whatsappService.sendBulk(phoneList , message);
+  }
+
+
+  changeStatusOfAttendance(e: 'غائب' | 'حاضر', data: any, date: any) {
+    const status = e;
+    const studentDetails = data?.studentDetails;
     this.dateAttendance.setHours(0, 0, 0, 0);
     let days = this.appService.getDatesAndDays();
-    let newDates = [];
+    let newDates: any[] = [];
     if (this.editModal) {
       newDates = this.dataOfAllDates?.map((d: any) =>
         new Date(d.date).toISOString() == new Date(date).toISOString()
@@ -350,7 +404,6 @@ export class AttendanceComponent {
           : { ...d, date: new Date(d.date) }
       );
 
-      console.log('newDates', newDates);
       this.appService
         .updateAttendance(data?._id, {
           attend_days_month: newDates,
@@ -359,17 +412,16 @@ export class AttendanceComponent {
         })
         .subscribe({
           next: (res) => {
-            console.log(res);
-            const newDays = res.data?.attend_days_month.filter(
-              (d: any) => new Date(d.date).getMonth() + 1 === this.activeMonth
+            // Take the saved list from the server so the modal and the data we send next time stay in sync.
+            this.dataOfAllDates = res.data?.attend_days_month ?? newDates;
+            this.refreshYears();
+            this.dataOfDays = this.dataOfAllDates.filter((d: any) =>
+              this.inMonth(d, this.activeMonth, this.activeYear)
             );
-            this.dataOfDays = newDays;
-            this.absence = newDays.filter(
-              (d: any) => d.status === 'غائب'
-            )?.length;
-            this.attend = newDays.filter(
-              (d: any) => d.status === 'حاضر'
-            )?.length;
+            if (status == 'غائب') {
+              this.confirmSendAlert(studentDetails);
+            }
+            this.recount();
             this.student_Data = res.data;
             this.msg.success('تم تعديل الحضور بنجاح');
             this.getDataOfAttendance();
@@ -377,6 +429,7 @@ export class AttendanceComponent {
           error: (err) => this.msg.error(err.message),
         });
     } else {
+
     if (
       data?.attend_days_month?.some(
         (e: any) => new Date(e.date).getMonth() == new Date().getMonth()
@@ -400,13 +453,14 @@ export class AttendanceComponent {
         })
         .subscribe({
           next: (res) => {
-            console.log(res);
             this.dataOfDays = res.data?.attend_days_month;
+            if (status == 'غائب') {
+              this.confirmSendAlert(studentDetails);
+            }
             this.msg.success('تم تعديل الحضور بنجاح');
             this.getDataOfAttendance();
             this.popOverVisible.set(data._id,false);
             // this.popOverVisible.delete(data._id)
-            console.log(this.popOverVisible);
 
             this.cd.detectChanges();
           },
@@ -416,21 +470,34 @@ export class AttendanceComponent {
   }
 
   openShowStudent(data: StudentItem) {
+    this.editingStudent = false;
     this.student_Data = data;
     this.showStudent = true;
   }
+  /** The details modal saved the student in place: leave edit mode, show the fresh data and refresh the list. */
+  onStudentSaved(): void {
+    this.editingStudent = false;
+    const id = this.student_Data?._id;
+    if (id) {
+      this.appService.getOne_student(id).subscribe({
+        next: (fresh) => (this.student_Data = { ...this.student_Data, ...fresh }),
+      });
+    }
+    this.getDataOfAttendance();
+  }
 
   closeShowStudent() {
+    this.editingStudent = false;
     this.showStudent = false;
   }
 
   studentName(id: string) {
-    let student = this.students_Name.filter((data) => data._id == id)[0]?.name;
+    let student = this.students_Name().find(data => data._id == id)?.name
     return student;
   }
 
   getNameOfOneStudent(id: string) {
-    let student = this.students_Name.filter((data) => data._id == id)[0]?.name;
+    let student = this.students_Name().find(data => data._id == id)?.name
     return student;
   }
 
@@ -444,7 +511,6 @@ export class AttendanceComponent {
   }
 
   onChange(result: Date): void {
-    console.log('onChange: ', result);
     if (result !== null) {
       this.dateFilter = result.toISOString();
       this.handleSearchQuery();
@@ -457,42 +523,48 @@ export class AttendanceComponent {
   async getDataOfAttendance() {
     this.loadingData = true;
     this.appService
-      .getAttendanceData(this.pageNumber, this.pageSize, '')
+      .getAttendanceData(this.pageNumber, this.pageSize, this.searchFilter())
       .subscribe({
         next: async (data) => {
-          console.log(data);
           this.listOfData = await data.data;
           this.count = await data?.metaData?.count;
           this.totalPages = await data?.metaData?.totalPages;
           this.total = await data?.metaData?.total;
           this.attendanceDetails = await data?.attendanceDetails[0];
-          const monthNames = moment.months();
-          const monthNumbers = monthNames.map((name) => {
-            const date = datefn.parse(name, 'MMMM', new Date());
-            return date.getMonth() + 1; // getMonth() returns 0-based month, hence +1
-          });
-          this.listofMonths = monthNumbers;
+          this.listofMonths = MONTH_NUMBERS;
           this.loadingData = false;
         },
         error: (err) => {
-          console.log(err);
           this.msg.error(err.message);
         },
       });
   }
+  /** True when the record falls in the given month *and year* (month alone mixed 2024 and 2026 days). */
+  private inMonth(d: { date: any }, month: number, year: number): boolean {
+    const x = new Date(d.date);
+    return x.getMonth() + 1 === month && x.getFullYear() === year;
+  }
+
+  private refreshYears() {
+    const years = new Set<number>([new Date().getFullYear()]);
+    (this.dataOfAllDates ?? []).forEach((d) => years.add(new Date(d.date).getFullYear()));
+    this.availableYears = [...years].sort((a, b) => b - a);
+  }
+
+  private recount() {
+    this.absence = (this.dataOfDays ?? []).filter((d: any) => d.status === 'غائب').length;
+    this.attend = (this.dataOfDays ?? []).filter((d: any) => d.status === 'حاضر').length;
+  }
+
+  handleChangeYear(year: number) {
+    this.activeYear = year;
+    this.handleChangeMonth(this.activeMonth);
+  }
+
   handleChangeMonth(month: number) {
     this.activeMonth = month;
-    this.dataOfDays = this.dataOfAllDates.filter(
-      (a: DatesObject) => new Date(a.date).getMonth() + 1 == month
-    );
-    this.absence = this.dataOfDays.filter(
-      (d: any) =>
-        d.status === 'غائب' && new Date(d.date).getMonth() + 1 == month
-    )?.length;
-    this.attend = this.dataOfDays.filter(
-      (d: any) =>
-        d.status === 'حاضر' && new Date(d.date).getMonth() + 1 == month
-    )?.length;
+    this.dataOfDays = this.dataOfAllDates.filter((a: DatesObject) => this.inMonth(a, month, this.activeYear));
+    this.recount();
   }
 
   handleOpenConfirmDelete(id: any): void {
@@ -531,7 +603,6 @@ export class AttendanceComponent {
   }
 
   changePagination(e: any) {
-    console.log(e);
     this.pageNumber = e;
     this.getDataOfAttendance();
   }
@@ -542,13 +613,6 @@ export class AttendanceComponent {
   }
 
   dataOfDatesArr() {
-    console.log(
-      'Dates Data =>>>>>>',
-      this.dataOfDays.filter(
-        (a: DatesObject) =>
-          new Date(a.date).getMonth() == this.dateAttendance.getMonth()
-      )
-    );
     let data = this.dataOfDays.filter(
       (a: DatesObject) =>
         new Date(a.date).getMonth() == this.dateAttendance.getMonth()
@@ -560,41 +624,25 @@ export class AttendanceComponent {
     this.attendanceId = id;
     this.studentId = sId;
     this.editModal = true;
-    let days = this.appService.getDatesAndDays();
     this.student_Data = student;
-    // data.map((e: any) => console.log(new Date(e.date).getMonth()));
+    this.modalStudentName = student?.studentDetails?.name ?? '';
 
-    if (
-      data.some(
-        (e: any) => new Date(e.date).getMonth() == new Date().getMonth()
-      )
-    ) {
-      this.dataOfAllDates = data;
-      this.dataOfDays = this.dataOfAllDates.filter(
-        (d) => new Date(d.date).getMonth() + 1 == this.activeMonth
-      );
-    } else {
-      this.dataOfAllDates = [...data, ...days];
-      this.dataOfDays = this.dataOfAllDates.filter(
-        (d) => new Date(d.date).getMonth() + 1 == this.activeMonth
-      );
-    }
-    this.absence = this.dataOfAllDates.filter(
-      (d: any) =>
-        d.status === 'غائب' &&
-        new Date(d.date).getMonth() + 1 == this.activeMonth
-    )?.length;
-    this.attend = this.dataOfAllDates.filter(
-      (d: any) =>
-        d.status === 'حاضر' &&
-        new Date(d.date).getMonth() + 1 == this.activeMonth
-    )?.length;
+    const now = new Date();
+    this.activeYear = now.getFullYear();
+    // If the student has no record for the current month (of the current year) add its class days,
+    // so today's attendance can be recorded. Older years stay available through the year selector.
+    const hasCurrentMonth = data.some((e: any) => this.inMonth(e, now.getMonth() + 1, now.getFullYear()));
+    this.dataOfAllDates = hasCurrentMonth ? data : [...data, ...this.appService.getDatesAndDays()];
+    this.refreshYears();
+    this.dataOfDays = this.dataOfAllDates.filter((d) => this.inMonth(d, this.activeMonth, this.activeYear));
+    this.recount();
   }
 
   cancelEditModal() {
     this.editModal = false;
     this.resetData();
     this.activeMonth = new Date().getMonth() + 1;
+    this.activeYear = new Date().getFullYear();
   }
 
   handleDeleteAttendance() {}

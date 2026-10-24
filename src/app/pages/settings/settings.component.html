@@ -1,0 +1,142 @@
+<app-page-header icon="setting" subtitle="خصّص شكل النظام — تُحفظ التغييرات تلقائيا وتظهر فورا">
+  <button actions nz-button class="!inline-flex items-center gap-2" nz-popconfirm nzPopconfirmTitle="سيتم اعادة كل الاعدادات للوضع الافتراضي، هل أنت متأكد؟" nzOkText="نعم" nzCancelText="الغاء" (nzOnConfirm)="reset()">
+    <span nz-icon nzType="reload"></span>
+    اعادة الضبط
+  </button>
+</app-page-header>
+
+<div class="grid grid-cols-1 gap-5 desk:grid-cols-2">
+  <!-- ------------------------------------------------------------ appearance -->
+  <app-section-card title="المظهر والألوان" subtitle="الوضع واللون الأساسي واللون الثانوي">
+    <div class="setting-row">
+      <div class="setting-label">وضع العرض<small>فاتح أو داكن</small></div>
+      <nz-segmented [nzOptions]="modeOptions" [ngModel]="isDark() ? 1 : 0" (ngModelChange)="setMode(val(modeOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">لوحات جاهزة<small>اختر لونين متناسقين بضغطة واحدة</small></div>
+      <div class="flex flex-wrap gap-2">
+        @for (p of presets; track p.name) {
+          <button type="button" class="preset" (click)="applyPreset(p)">
+            <span class="dots"><i [style.background]="p.primary"></i><i [style.background]="p.secondary"></i></span>
+            {{ p.name }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">اللون الأساسي<small>الأزرار والروابط والعناصر المحددة</small></div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="swatch is-default" [class.is-active]="s().primary === null" title="الافتراضي" aria-label="اللون الافتراضي" (click)="set('primary', null)"></button>
+        @for (c of swatches; track c) {
+          <button type="button" class="swatch" [class.is-active]="s().primary === c" [style.background]="c" [attr.aria-label]="c" (click)="set('primary', c)"></button>
+        }
+        <input class="color-input" type="color" [value]="primary()" aria-label="لون أساسي مخصص" (input)="onColor('primary', $event)" />
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">اللون الثانوي<small>القائمة الجانبية وعلامة العنصر النشط</small></div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="swatch is-default" [class.is-active]="s().secondary === null" title="الافتراضي" aria-label="اللون الافتراضي" (click)="set('secondary', null)"></button>
+        @for (c of swatches; track c) {
+          <button type="button" class="swatch" [class.is-active]="s().secondary === c" [style.background]="c" [attr.aria-label]="c" (click)="set('secondary', c)"></button>
+        }
+        <input class="color-input" type="color" [value]="secondary()" aria-label="لون ثانوي مخصص" (input)="onColor('secondary', $event)" />
+      </div>
+    </div>
+  </app-section-card>
+
+  <!-- ------------------------------------------------------------ typography & shape -->
+  <app-section-card title="الخط والشكل" subtitle="حجم الخط والزوايا والكثافة">
+    <div class="setting-row">
+      <div class="setting-label">نوع الخط</div>
+      <nz-select class="w-[220px]" [ngModel]="s().fontFamily" (ngModelChange)="set('fontFamily', $event)" [nzDropdownStyle]="{ direction: 'rtl' }">
+        @for (f of fonts; track f.key) {
+          <nz-option [nzValue]="f.key" [nzLabel]="f.label"></nz-option>
+        }
+      </nz-select>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">حجم الخط</div>
+      <nz-segmented [nzOptions]="sizeOptions" [ngModel]="idx(sizeOptions, s().fontSize)" (ngModelChange)="set('fontSize', val(sizeOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">استدارة الزوايا</div>
+      <nz-segmented [nzOptions]="radiusOptions" [ngModel]="idx(radiusOptions, s().radius)" (ngModelChange)="set('radius', val(radiusOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">كثافة الجداول<small>المسافة داخل خلايا الجدول</small></div>
+      <nz-segmented [nzOptions]="densityOptions" [ngModel]="idx(densityOptions, s().density)" (ngModelChange)="set('density', val(densityOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">الشريط العلوي</div>
+      <nz-segmented [nzOptions]="headerOptions" [ngModel]="idx(headerOptions, s().header)" (ngModelChange)="set('header', val(headerOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">تقليل الحركة<small>ايقاف الانتقالات والتأثيرات الحركية</small></div>
+      <nz-switch [ngModel]="s().reduceMotion" (ngModelChange)="set('reduceMotion', $event)"></nz-switch>
+    </div>
+  </app-section-card>
+
+  <!-- ------------------------------------------------------------ sidebar -->
+  <app-section-card title="القائمة الجانبية" subtitle="الشكل والعرض والموضع">
+    <div class="setting-row">
+      <div class="setting-label">نمط الخلفية</div>
+      <nz-segmented [nzOptions]="sidebarStyleOptions" [ngModel]="idx(sidebarStyleOptions, s().sidebarStyle)" (ngModelChange)="set('sidebarStyle', val(sidebarStyleOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">العرض</div>
+      <nz-segmented [nzOptions]="sidebarWidthOptions" [ngModel]="idx(sidebarWidthOptions, s().sidebarWidth)" (ngModelChange)="set('sidebarWidth', val(sidebarWidthOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">شكل العناصر</div>
+      <nz-segmented [nzOptions]="shapeOptions" [ngModel]="idx(shapeOptions, s().sidebarItemShape)" (ngModelChange)="set('sidebarItemShape', val(shapeOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">الموضع</div>
+      <nz-segmented [nzOptions]="positionOptions" [ngModel]="idx(positionOptions, s().sidebarPosition)" (ngModelChange)="set('sidebarPosition', val(positionOptions, $event))"></nz-segmented>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">تصغير القائمة افتراضيا<small>تظهر الأيقونات فقط عند فتح النظام</small></div>
+      <nz-switch [ngModel]="s().sidebarCollapsed" (ngModelChange)="set('sidebarCollapsed', $event)"></nz-switch>
+    </div>
+  </app-section-card>
+
+  <!-- ------------------------------------------------------------ live preview -->
+  <app-section-card title="معاينة مباشرة" subtitle="هكذا ستبدو العناصر بالاعدادات الحالية">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <button nz-button nzType="primary">زر أساسي</button>
+        <button nz-button>زر عادي</button>
+        <button nz-button nzType="dashed">متقطع</button>
+        <button nz-button nzType="link">رابط</button>
+        <nz-tag nzColor="blue">وسم</nz-tag>
+        <nz-switch [ngModel]="true"></nz-switch>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <input nz-input class="max-w-[240px]" placeholder="مربع ادخال" />
+        <nz-select class="w-[200px]" nzPlaceHolder="اختر طالب" [nzDropdownStyle]="{ direction: 'rtl' }">
+          @for (o of previewOptions; track o) {
+            <nz-option [nzValue]="o" [nzLabel]="o"></nz-option>
+          }
+        </nz-select>
+        <nz-progress class="w-[180px]" [nzPercent]="68"></nz-progress>
+      </div>
+      <div class="grid grid-cols-1 gap-3 tablet:grid-cols-2">
+        <app-stat-card label="عدد الطلاب" icon="team" [value]="229"></app-stat-card>
+        <app-stat-card label="الاجمالي للمصروفات" icon="dollar" tone="success" suffix="ج" [value]="34065"></app-stat-card>
+      </div>
+    </div>
+  </app-section-card>
+</div>

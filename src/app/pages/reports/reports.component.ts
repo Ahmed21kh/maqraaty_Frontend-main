@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { AttendanceInsightsComponent } from './attendance-insights/attendance-insights.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -24,7 +27,7 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -39,19 +42,22 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzStatisticModule } from 'ng-zorro-antd/statistic';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
-import { StatisticComponent } from '../../components/statistic/statistic.component';
+import { StatisticComponent } from '../../shared/components/statistic/statistic.component';
 import { NzProgressModule } from 'ng-zorro-antd/progress';
-import { EmptyPipe } from "../../pipes/empty.pipe";
-import { CurrencyEgPipe } from "../../pipes/currency-eg.pipe";
-import { SlickCarouselModule } from 'ngx-slick-carousel';
-import moment from 'moment';
+import { EmptyPipe } from "../../shared/pipes/empty.pipe";
+import { CurrencyEgPipe } from "../../shared/pipes/currency-eg.pipe";
+import { SlickCarouselComponent, SlickCarouselModule } from 'ngx-slick-carousel';
 import { parse } from 'date-fns';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzTagModule } from 'ng-zorro-antd/tag';
 import { NzTypographyModule } from 'ng-zorro-antd/typography';
 import { NzEmptyModule } from 'ng-zorro-antd/empty';
 import { Router } from '@angular/router';
-import { ThemeService } from '../../services/theme.service';
+import { ThemeService } from '../../../theme/theme.service';
+
+/** Months 1–12 for the month picker. */
+const MONTH_NUMBERS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 interface DataItem {
   _id: string;
   code: number;
@@ -98,8 +104,9 @@ interface ColumnItem {
     templateUrl: './reports.component.html',
     styleUrl: './reports.component.scss',
     imports: [
+    MonthCarouselComponent,
         NzGridModule,
-        BreadcrumbComponent,
+        PageHeaderComponent, StatCardComponent, AttendanceInsightsComponent,
         NzTableModule,
         NzButtonModule,
         NzIconModule,
@@ -133,7 +140,7 @@ interface ColumnItem {
 })
 export class ReportsComponent implements OnInit {
 constructor(
-  private appService:AappServiceService,
+  private appService:ApiService,
   private msg:NzMessageService ,
   private route:Router,
   private themeService:ThemeService
@@ -152,26 +159,65 @@ endDate:string =new Date(this.currentYear,this.currentMonth , 1).toLocaleDateStr
 amountOfAllStudents:number = 0;
 loadingData:boolean = false;
 activeMonth = new Date().getMonth() + 1;
+/** True while the range picker (not the month / year selectors) defines the period shown. */
+private customPeriod = false;
 listofMonths!: any;
 total:number = 0;
 historyPayments:any[] = [];
 formatOne = (percent: number): string => ` % ${percent} `;
+@ViewChild('slickModal') slickModal!:SlickCarouselComponent;
+slideConfig = {
+  slidesToShow: 6,
+  slidesToScroll: 2,
+  infinite: false,
+  rtl: true,
+  // fewer, wider month chips on narrow screens
+  responsive: [
+    { breakpoint: 767, settings: { slidesToShow: 4, slidesToScroll: 2 } },
+    { breakpoint: 480, settings: { slidesToShow: 3, slidesToScroll: 1 } },
+  ],
+};
 
-slideConfig = { slidesToShow: 6, slidesToScroll: 2 ,infinite:false , rtl:true };
+/** How many month chips slick shows at the current window width (mirrors `responsive` above). */
+private visibleSlides(): number {
+  const w = typeof window === 'undefined' ? 1024 : window.innerWidth;
+  return w <= 480 ? 3 : w <= 767 ? 4 : this.slideConfig.slidesToShow;
+}
 slickInit(e: any) {
-  console.log('slick initialized');
+  if (this.activeMonth) {
+    this.centerMonth(this.activeMonth);
+  }
+}
+
+private centerMonth(month: any) {
+  const index = this.listofMonths.indexOf(month);
+  if (index === -1) return;
+
+  const slidesToShow = this.visibleSlides();
+  const centerOffset = Math.floor(slidesToShow / 2);
+
+  let targetIndex = index - centerOffset;
+
+  // clamp so we don't scroll past the start
+  if (targetIndex < 0) targetIndex = 0;
+
+  // clamp so we don't scroll past the end
+  const maxIndex = this.listofMonths.length - slidesToShow;
+  if (targetIndex > maxIndex) targetIndex = Math.max(maxIndex, 0);
+
+  // slight delay ensures slick has fully initialized before programmatic scroll
+  setTimeout(() => {
+    this.slickModal?.slickGoTo(targetIndex);
+  }, 0);
 }
 
 breakpoint(e: any) {
-  console.log('breakpoint');
 }
 
 afterChange(e: any) {
-  console.log('afterChange');
 }
 
 beforeChange(e: any) {
-  console.log('beforeChange');
 }
 
 ngOnInit(): void {
@@ -180,12 +226,7 @@ ngOnInit(): void {
 // console.log("End Date:", this.endDate);
 this.date = [this.startDate,this.endDate]
 
-const monthNames = moment.months();
-  const monthNumbers = monthNames.map((name) => {
-    const date = parse(name, 'MMMM', new Date());
-    return date.getMonth() + 1; // getMonth() returns 0-based month, hence +1
-  });
-  this.listofMonths = monthNumbers;
+          this.listofMonths = MONTH_NUMBERS;
 }
 getAllReports(){
   this.loadingData = true;
@@ -235,9 +276,31 @@ navigateToPaymentDetails(date:string){
 })
 }
 
+/**
+ * Period for the "paid expenses" page, matching what this page is showing:
+ * the selected month of the selected year, the custom range if one was picked, or everything
+ * (2000 → today) when the range picker was cleared. Dates are local calendar days, YYYY-MM-DD.
+ */
+paidExpensesParams(): { from: string; to: string } {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const local = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (!this.customPeriod) {
+    const lastDay = new Date(this.currentYear, this.activeMonth, 0).getDate();
+    return {
+      from: `${this.currentYear}-${pad(this.activeMonth)}-01`,
+      to: `${this.currentYear}-${pad(this.activeMonth)}-${pad(lastDay)}`,
+    };
+  }
+  const range = this.date;
+  if (Array.isArray(range) && range[0] instanceof Date && range[1] instanceof Date) {
+    return { from: local(range[0]), to: local(range[1]) };
+  }
+  return { from: '2000-01-01', to: local(new Date()) };
+}
+
 handleChangeMonth(month: number) {
+  this.customPeriod = false;
   this.activeMonth = month;
-  console.log(month);
   this.startDate = new Date(this.currentYear, month - 1, 0)
     .toLocaleDateString('en-CA', {
       year: 'numeric',
@@ -256,8 +319,7 @@ handleChangeMonth(month: number) {
 }
 
 onChangeYear(year: Date) {
-  console.log(year);
-  console.log(this.yearDate);
+  this.customPeriod = false;
   this.currentYear = year.getFullYear();
   this.startDate = new Date(this.currentYear, this.activeMonth - 1, 0)
   .toLocaleDateString('en-CA', {
@@ -278,9 +340,8 @@ this.getAllReports();
 }
 
 onChange(result: Date[]): void {
+ this.customPeriod = true;
  if (result.length>0){
-  console.log('start: ', result[0].toISOString().split('T')[0]);
-  console.log('end: ', result[1].toISOString().split('T')[0]);
   this.startDate = result[0].toISOString().split('T')[0]
   this.endDate = result[1].toISOString().split('T')[0]
   this.getAllReports()

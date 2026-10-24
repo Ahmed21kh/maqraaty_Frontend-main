@@ -1,9 +1,9 @@
 <div class="registered_div">
   <div>
-    <app-breadcrumb></app-breadcrumb>
+    <app-page-header></app-page-header>
     <div class="registered_table" >
       <div style="margin-block: 20px;display:flex;align-items: center;justify-content: space-between;gap: 20px;">
-        <nz-date-picker [nzSize]="'large'" [nzAllowClear]="false" [nzInputReadOnly]="true" [nzDefaultPickerValue]="defaultDate" [(ngModel)]="dateFilter" class=" w-1/5 !rounded-xl" (ngModelChange)="onChange($event)"></nz-date-picker>
+        <nz-date-picker [nzSize]="'large'" [nzAllowClear]="false" [nzInputReadOnly]="true" [nzDefaultPickerValue]="defaultDate" [(ngModel)]="dateFilter" class=" w-1/5 md:!w-full !rounded-xl" (ngModelChange)="onChange($event)"></nz-date-picker>
 
        </div>
       <ng-template #pagination>
@@ -22,32 +22,28 @@
       </ng-template>
        <nz-card nzTitle="دفع الاشتراك" nzBordered class=" !rounded-md !my-5 ">
          <form nz-row [nzGutter]="[24 , 24]" [formGroup]="paymentForm" (ngSubmit)="submit(paymentForm) " [nzAlign]="'top'">
-           <div nz-col nzXs="5">
-             <nz-select [nzSize]="'large'"  formControlName="student" dir="rtl" [nzAllowClear]="false" [nzShowSearch]="true" [nzDropdownStyle]="{'direction':'rtl'}" nzPlaceHolder="اختر اسم الطالب" class=" w-full !rounded-md">
-               @for (item of students_Name; track $index) {
-                 <nz-option [nzKey]="$index" [nzValue]="item._id" [nzLabel]="item.name | empty"></nz-option>
-               }
-             </nz-select>
-              @if (pf.student.errors?.['required']&&pf['student'].touched) {
-               <p class=" text-[red] ">هذا الحقل مطلوب</p>
+           <div nz-col nzXs="24" nzMd="8" nzLg="5">
+             <app-student-select size="large" [status]="hasStudentError() ? 'error' : ''" formControlName="student" />
+              @if (hasStudentError()) {
+               <p class=" text-red-700 !text-md ">هذا الحقل مطلوب</p>
               }@else {
                <p></p>
               }
            </div>
-           <div nz-col nzXs="3">
-           <label for="payment">قيمة الاشتراك</label>
-           <p class=" text-base font-medium">{{subscriptionVal==null?'يستثني':subscriptionVal}}</p>
+           <div nz-col nzXs="24" nzMd="4" nzLg="3" class=" !flex !flex-column items-center justify-center gap-2">
+           <label for="payment" class=" text-gray-400">قيمة الاشتراك : </label>
+           <nz-tag [nzColor]="" class=" !text-base font-medium">{{subscriptionVal==null?'يستثني':subscriptionVal}}</nz-tag>
            </div>
-           <div nz-col nzXs="5">
-             <input [nzSize]="'large'" formControlName="amount"  nz-input type="number" placeholder="ادخل القيمة" class=" !rounded-md" />
-             @if (pf.amount.errors?.['required']&&pf['amount'].touched) {
-               <p class=" text-[red] ">هذا الحقل مطلوب</p>
+           <div nz-col nzXs="24" nzMd="6" nzLg="5">
+             <input [nzSize]="'large'" formControlName="amount"  nz-input type="number" placeholder="ادخل القيمة" class=" !rounded-md" [nzStatus]="hasAmountError()?'error':''"/>
+             @if (hasAmountError()) {
+               <p class=" text-red-700 !text-md">هذا الحقل مطلوب</p>
               }@else {
                <p></p>
               }
            </div>
-           <div nz-col nzXs="5">
-            <button [nzLoading]="payLoading" [nzSize]="'default'" nz-button [nzType]="'primary'" class="  !rounded-md !mt-1" type="submit" [disabled]="subscriptionVal==null " >دفع الاشتراك</button>
+           <div nz-col nzXs="24" nzMd="6" nzLg="5">
+            <button [nzLoading]="payLoading" [nzSize]="'default'" nz-button [nzType]="'primary'" class="!rounded-md !mt-1 md:!w-full" type="submit" [disabled]="subscriptionVal==null " >دفع الاشتراك</button>
            </div>
 
          </form>
@@ -92,7 +88,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (data of filterTable.data; track $index) {
+          @for (data of filterTable.data; track data._id) {
           <!-- <ng-template ngFor let-data [ngForOf]="filterTable.data"> -->
           <tr>
             <td >{{ data.studentDetails.code | empty}}</td>
@@ -121,7 +117,7 @@
               />
               }
             </td>
-            <td>{{ data.date | date:'dd-MM-YYYY' }}</td>
+            <td>{{ data.date | date:'dd-MM-yyyy' }}</td>
             <td>{{ data.amount | empty}}<span class="leading-relaxed"> {{ "ج" }} </span></td>
             <td>
               <div style="display: flex; justify-content: space-around">

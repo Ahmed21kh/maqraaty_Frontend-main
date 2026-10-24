@@ -1,49 +1,53 @@
-<div class=" home !z-20">
-<div class=" relative w-full h-full ">
-  <div class=" absolute inset-0 flex items-center flex-col gap-8 justify-center  bg-[#00000075] ">
-    <div class=" w-auto flex flex-col gap-10 justify-center items-center">
-      <h1 class=" text-white text-2xl">مرحبا بك في <span> مقرأتي</span></h1>
-      <nz-input-group class=" !rounded-xl text-black hover:border-[#ccc] focus:border-[#ccc] !shadow-lg" [nzSize]="'large'" [nzPrefix]="prefix">
+<section class="home">
+  <div class="absolute inset-0 flex flex-col items-center justify-center gap-8 bg-black/55 px-4 text-center">
+    <h1 class="home-title m-0 text-2xl text-white">مرحبا بك في <span class="font-bold">مقرأتي</span></h1>
+
+    <p class="verse home-verse text-white">﴿ خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ ﴾</p>
+
+    <div class="home-search w-full max-w-2xl">
+      <nz-input-group
+        class="!rounded-xl !shadow-lg"
+        nzSize="large"
+        [nzPrefix]="prefix"
+      >
         <input
-        nz-input
-        [(ngModel)]="inputValue"
-        (input)="onInput($event)"
-        [nzAutocomplete]="auto"
-        placeholder=" ابحث عن الطلاب المشتركون"
-        class=" indent-2"
+          nz-input
+          class="indent-2"
+          type="search"
+          placeholder="ابحث بالاسم أو الكود أو رقم الهاتف"
+          aria-label="ابحث عن الطلاب المشتركين"
+          [ngModel]="inputValue()"
+          (ngModelChange)="onInput($event)"
+          [nzAutocomplete]="auto"
         />
       </nz-input-group>
-      <h1 class=" text-6xl text-center z-10 text-white">{{'{ خيركم من تعلم القرآن و علمه }'}}</h1>
-      <nz-autocomplete dir="rtl"   [nzOverlayStyle]="{direction:'rtl'}" nzBackfill #auto>
-        @for (item of options; track $index) {
-          <nz-auto-option [nzValue]="item.name" [routerLink]="'/student-account/'+item._id">
-           <div class=" flex items-center justify-between">
-            <div class=" flex items-center gap-3">
-              @if (item.image) {
-                <img width="30" height="30" [src]="url+''+item.image" [alt]="item.name" >
-              } @else {
-                <img
-                loading="lazy"
-                width="30"
-                height="30"
-                style="margin: auto"
-                [src]="'assets/user.png'"
-                alt="img"
-              />
-              }
-              <h1 class=" text-lg font-medium">{{item.name}}</h1>
+      <ng-template #prefix>
+        <span class="text-gray-400" nz-icon nzType="search" nzTheme="outline"></span>
+      </ng-template>
+
+      <nz-autocomplete #auto dir="rtl" [nzOverlayStyle]="{ direction: 'rtl' }" nzBackfill>
+        @for (item of options(); track item.id) {
+          <nz-auto-option [nzValue]="item.name" [routerLink]="['/student-account', item.id]">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <app-student-avatar [name]="item.name" [image]="item.imagePath" [size]="32" />
+                <span class="text-lg font-medium">{{ item.name }}</span>
+              </div>
+              <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
             </div>
-            <span nz-icon nzType="arrow-left" nzTheme="outline"></span>
-           </div>
           </nz-auto-option>
         }
       </nz-autocomplete>
-     <ng-template #prefix >
-      <span class=" text-gray-400 w-full" nz-icon nzType="search" nzTheme="outline"></span>
-    </ng-template>
-
     </div>
 
+
+    <nav class="flex flex-wrap items-center justify-center gap-3" aria-label="اختصارات">
+      @for (link of quickLinks; track link.route) {
+        <a [routerLink]="link.route" class="quick-link">
+          <span nz-icon [nzType]="link.icon" nzTheme="outline" class="text-xl"></span>
+          <span>{{ link.label }}</span>
+        </a>
+      }
+    </nav>
   </div>
-</div>
-</div>
+</section>

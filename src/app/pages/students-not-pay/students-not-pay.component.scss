@@ -1,7 +1,7 @@
 .registered_table
 {
   margin:50px auto;
-  padding-inline: 20px;
+  padding-inline: 0;
 }
 ::ng-deep .registered_table.ant-table-column-title {
    position: relative;
@@ -81,4 +81,26 @@
 }
 ::ng-deep.slick-list {
   direction: rtl !important;
+}
+
+// "send non-payment reminder" action: warning tone, same height as its neighbours, soft glow on hover
+.notify-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--app-warning) !important;
+  background: color-mix(in srgb, var(--app-warning) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--app-warning) 45%, transparent) !important;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+
+  &:hover:not([disabled]) {
+    background: color-mix(in srgb, var(--app-warning) 24%, transparent) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--app-warning) 18%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .anticon {
+    font-size: 15px;
+  }
 }

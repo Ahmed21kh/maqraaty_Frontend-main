@@ -1,3 +1,4 @@
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -16,8 +17,10 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import { NzUploadModule } from 'ng-zorro-antd/upload';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { StudentPaymentDetailsComponent } from '../student-payment-details/student-payment-details.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { ApiService } from '../../core/services/api.service';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { Router, RouterModule } from '@angular/router';
 import { NzCardModule } from 'ng-zorro-antd/card';
@@ -45,8 +48,9 @@ interface Student_Names {
   selector: 'app-subscriptions',
   standalone: true,
   imports: [
+    StudentSelectComponent,
     NzGridModule,
-    BreadcrumbComponent,
+    PageHeaderComponent,
     NzTableModule,
     NzButtonModule,
     NzIconModule,
@@ -65,37 +69,22 @@ interface Student_Names {
     CommonModule,
     NzDividerModule,
     RouterModule,
-    NzCardModule
+    NzCardModule,
+    StudentPaymentDetailsComponent,
+    EmptyStateComponent
   ],
   templateUrl: './subscriptions.component.html',
   styleUrl: './subscriptions.component.scss'
 })
-export class SubscriptionsComponent implements OnInit {
-constructor(private appService:AappServiceService,private msg:NzMessageService,private router: Router){
+export class SubscriptionsComponent {
+constructor(private appService:ApiService,private msg:NzMessageService,private router: Router){
 
 }
 selectedVal:any
-students_Name: Student_Names[] = [];
-async getStudentsName(){
-  this.appService.getStudents_names('active').subscribe({
-    next:async(data)=>{
-      this.students_Name = await data;
-    },
-    error:(err)=>{
-      this.msg.error(err.message)
-    }
-  })
-}
-
+selectedId: string | null = null;
 onSelect(path: any): void {
-  console.log(path);
-  if(path){
-
-    this.router.navigate([`/student-account/${path}`]);
-  }
-}
-ngOnInit(){
-  this.getStudentsName()
+  // show the student's account right below the picker instead of navigating away
+  this.selectedId = path || null;
 }
 
 }

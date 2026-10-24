@@ -1,0 +1,374 @@
+<form [autocomplete]="true" dir="rtl" [formGroup]="myForm" (ngSubmit)="handleSubmitEdit()">
+  <div class=" " nz-row [nzGutter]="[24, 10]">
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>الاسم <span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+      <input nz-input placeholder="ادخل الاسم " formControlName="name" />
+      @if (f['name'].errors?.['required'] && f['name'].touched) {
+      <p style="color: var(--app-danger)">الاسم مطلوب</p>
+      } @else if (f['name'].errors?.['minlength'] && f['name'].touched) {
+      <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>السن<span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+      <input nz-input type="number" placeholder="ادخل السن " formControlName="age" />
+      @if (f['age'].errors?.['required'] && f['age'].touched) {
+      <p style="color: var(--app-danger)">السن مطلوب</p>
+      } @else if (f['age'].errors?.['minlength'] && f['age'].touched) {
+      <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>السنة الدراسية<span style="color: var(--app-danger); margin-inline: 5px">
+          *
+        </span>
+      </nz-form-label>
+      <input nz-input placeholder="ادخل السنة الدراسية " formControlName="study_year" />
+      <!-- <nz-date-picker nzMode="year" class=" w-full" nzPlaceHolder="ادخل السنة الدراسية " formControlName="study_year" ></nz-date-picker> -->
+      @if (f['study_year'].errors?.['required'] &&
+      f['study_year'].touched) {
+      <p style="color: var(--app-danger)">السنة الدراسية مطلوبة</p>
+      } @else if (f['study_year'].errors?.['minlength'] &&
+      f['study_year'].touched) {
+      <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>رقم موبايل الطالب
+        <span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+      <div formArrayName="phone_1">
+        @for (item of arr_phone_1.controls; track $index) {
+        <div style="
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+          " [style]="'margin-bottom:10px'">
+          <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
+          @if ($index == 0) {
+          <button (click)="handleAdd('phone_1')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            ">
+            <span style="font-size: 12px" nz-icon nzType="plus"></span>
+          </button>
+
+          }@else {
+          <button (click)="handleRemove($index, 'phone_1')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            ">
+            <span style="font-size: 12px" nz-icon nzType="minus"></span>
+          </button>
+          }
+        </div>
+        @if (item.errors?.['required'] && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
+        }@else if ((item.errors?.['pattern']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
+        }@else if ((item.errors?.['min']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+        } @else {
+        <p></p>
+        } }
+      </div>
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>رقم موبايل الام</nz-form-label>
+      <div formArrayName="phone_2">
+        @for (item of arr_phone_2.controls; track $index) {
+        <div style="
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+          " [style]="'margin-bottom:10px'">
+          <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
+          @if ($index == 0) {
+          <button (click)="handleAdd('phone_2')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            ">
+            <span style="font-size: 12px" nz-icon nzType="plus"></span>
+          </button>
+
+          }@else {
+          <button (click)="handleRemove($index, 'phone_2')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            ">
+            <span style="font-size: 12px" nz-icon nzType="minus"></span>
+          </button>
+          }
+        </div>
+        @if (item.errors?.['required'] && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
+        }@else if ((item.errors?.['pattern']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
+        }@else if ((item.errors?.['min']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+        } @else {
+        <p></p>
+        } }
+      </div>
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>رقم موبايل الاب</nz-form-label>
+      <div formArrayName="phone_3">
+        @for (item of arr_phone_3.controls; track $index) {
+        <div style="
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+          " [style]="'margin-bottom:10px'">
+          <input nz-input type="text" [id]="$index" placeholder="ادخل رقم الموبايل " [formControlName]="$index" />
+          @if ($index == 0) {
+          <button (click)="handleAdd('phone_3')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            ">
+            <span style="font-size: 12px" nz-icon nzType="plus"></span>
+          </button>
+
+          }@else {
+          <button (click)="handleRemove($index, 'phone_3')" type="button" nz-button nzType="primary" style="
+              border-radius: 15px;
+              padding: 5px;
+              width: auto;
+              height: auto;
+            " class="rounded-md ">
+            <span style="font-size: 12px" nz-icon nzType="minus"></span>
+          </button>
+          }
+        </div>
+        @if (item.errors?.['required'] && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل مطلوب</p>
+        }@else if ((item.errors?.['pattern']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل غير صحيح</p>
+        }@else if ((item.errors?.['min']) && item.touched) {
+        <p style="color: var(--app-danger)">رقم الموبايل يجب ان يكون علي الاقل 11</p>
+        } @else {
+        <p></p>
+        } }
+      </div>
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>التليفون الارضي
+        <span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+      <input nz-input type="text" placeholder="ادخل التليفون الارضي " formControlName="landline" />
+      @if (f['landline'].errors?.['required'] && f['landline'].touched) {
+      <p style="color: var(--app-danger)">التليفون الارضي مطلوب</p>
+      } @else if (f['landline'].errors?.['min'] && f['landline'].touched)
+      {
+      <p style="color: var(--app-danger)">
+        التليفون الارضي يجب ان يحتوي علي الاقل علي ثمانية ارقام
+      </p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>تاريخ التسجيل بالمقرأة<span style="color: var(--app-danger); margin-inline: 5px">
+          *
+        </span>
+      </nz-form-label>
+      <nz-date-picker class="w-full" nzPlaceHolder="ادخل التاريخ " formControlName="date"></nz-date-picker>
+
+      @if (f['date'].errors?.['required'] && f['date'].touched) {
+      <p style="color: var(--app-danger)">التاريخ مطلوب</p>
+      } @else if (f['date'].errors?.['minlength'] && f['date'].touched) {
+      <p style="color: var(--app-danger)">الاسم يجب ان يحتوي علي الاقل علي اربع حروف</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      <nz-form-label>هل الطالب ازهري ؟<span style="color: var(--app-danger); margin-inline: 5px">
+          *
+        </span>
+      </nz-form-label>
+      <nz-radio-group formControlName="is_Azhar" nzName="radiogroup">
+        <label nz-radio nzValue="نعم">نعم</label>
+        <label nz-radio nzValue="لا">لا</label>
+      </nz-radio-group>
+      @if (f['is_Azhar'].errors?.['required'] && f['is_Azhar'].touched) {
+      <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="24" nzXl="24">
+      <nz-form-label>هل للطالب اقارب ؟<span style="color: var(--app-danger); margin-inline: 5px">
+          *
+        </span>
+      </nz-form-label>
+      <nz-radio-group formControlName="has_relative" nzName="radiogroup">
+        <label nz-radio nzValue="نعم">نعم</label>
+        <label nz-radio nzValue="لا">لا</label>
+      </nz-radio-group>
+      @if (f['has_relative'].errors?.['required'] &&
+      f['has_relative'].touched) {
+      <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
+      } @else {
+      <p></p>
+      } @if (f['has_relative'].value == 'نعم') {
+      <ng-container>
+        <nz-form-label>الاسم<span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+        </nz-form-label>
+        <div formArrayName="relative">
+          @for (item of arr_relative.controls; track $index) {
+          <div style="
+              display: flex;
+              flex-direction: row;
+              align-items: center;
+              gap: 8px;
+            " [style]="'margin-bottom:10px'">
+            <!-- <input
+                nz-input
+                type="text"
+                [id]="$index"
+                placeholder="ادخل رقم الموبايل "
+                [formControlName]="$index"
+              /> -->
+            <app-student-select scope="" [hiddenIds]="relativeExclusions()" placeholder="اختار الاسم" [formControlName]="$index" />
+            @if ($index == 0) {
+            <button (click)="handleAdd('relative')" [disabled]="selectedStudents().length == 0" type="button" nz-button nzType="primary" style="
+                border-radius: 15px;
+                padding: 5px;
+                width: auto;
+                height: auto;
+              ">
+              <span style="font-size: 12px" nz-icon nzType="plus"></span>
+            </button>
+
+            }@else {
+            <button (click)="handleRemove($index, 'relative')" type="button" nz-button nzType="primary" style="
+                border-radius: 15px;
+                padding: 5px;
+                width: auto;
+                height: auto;
+              ">
+              <span style="font-size: 12px" nz-icon nzType="minus"></span>
+            </button>
+            }
+          </div>
+          @if (item.errors?.['required'] && item.touched) {
+          <p style="color: var(--app-danger)">الاسم مطلوب</p>
+          }@else if ((item.errors?.['min']) && item.touched) {
+          <p style="color: var(--app-danger)">الاسم يجب ان يكون علي الاقل 4 احرف</p>
+          } @else {
+          <p></p>
+          } }
+        </div>
+      </ng-container>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="24" nzLg="16" nzXl="16">
+      <nz-form-label>هل الطالب يستثنى من دفع المصروفات ؟<span style="color: var(--app-danger); margin-inline: 5px">
+          *
+        </span>
+      </nz-form-label>
+      <nz-radio-group formControlName="is_payment" nzName="radiogroup">
+        <label nz-radio nzValue="نعم">نعم</label>
+        <label nz-radio nzValue="لا">لا</label>
+      </nz-radio-group>
+      @if (f['is_payment'].errors?.['required'] &&
+      f['is_payment'].touched) {
+      <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+
+    <div nz-col nzXs="24" nzMd="12" nzLg="8" nzXl="8">
+      @if (this.myForm.value.is_payment == 'لا' ) {
+      <nz-form-label> المصروفات </nz-form-label>
+      <input nz-input min="0" type="number" class="w-full" placeholder="ادخل المصروفات " formControlName="amount" />
+
+      @if (pf['amount'].errors?.['required'] && pf['amount'].touched) {
+      <p style="color: var(--app-danger)">المصروفات مطلوبة</p>
+      } @else {
+      <p></p>
+      } }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="12" nzXl="12">
+      <nz-form-label>العنوان <span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+      <textarea nz-input placeholder="ادخل العنوان " formControlName="address" [nzAutosize]="{ minRows: 5, maxRows: 5 }"
+        [rows]="5"></textarea>
+      @if (f['address'].errors?.['required'] && f['address'].touched) {
+      <p style="color: var(--app-danger)">العنوان مطلوب</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+    <div nz-col nzXs="24" nzMd="12" nzLg="12" nzXl="12">
+      <nz-form-label>الملاحظات</nz-form-label>
+      <textarea nz-input placeholder="ادخل الملاحظات " formControlName="notes" [nzAutosize]="{ minRows: 5, maxRows: 5 }"
+        [rows]="5"></textarea>
+    </div>
+    <div nz-col nzXs="24" nzMd="24" nzLg="24" nzXl="24">
+      <nz-form-label>الصورة <span style="color: var(--app-danger); margin-inline: 5px"> * </span>
+      </nz-form-label>
+
+      <div nz-row [nzGutter]="[24, 24]" nzAlign="middle">
+        @if (myForm.value.image !== '') {
+        <div nz-col nzSpan="24">
+            <img style="display: inline-block; cursor: zoom-in" dir="ltr" nz-image width="100px" height="100px"
+              [nzSrc]="url + '' + myForm.value.image" alt="" />
+        </div>
+        }
+        <div nz-col nzSpan="24">
+          @if (myForm.value.image !== '') {
+          <nz-upload [nzMultiple]="false" [nzAction]="url + 'api/upload-image'" nzName="file"
+            (nzChange)="handleChange($event)">
+            <button type="button" nz-button nzType="default" style="display: flex; align-items: center; gap: 10px">
+              <span nz-icon nzType="upload"></span>
+              اضغط لرفع صورة اخرى
+            </button>
+          </nz-upload>
+          }@else {
+          <nz-upload nzType="drag" [nzMultiple]="false" [nzAction]="url+'api/upload-image'" nzName="file"
+            (nzChange)="handleChange($event)">
+            <p class="ant-upload-drag-icon">
+              <span nz-icon nzType="inbox"></span>
+            </p>
+            <p class="ant-upload-text">اضغط هنا لرفع الصورة</p>
+            <!-- <p class="ant-upload-hint">
+              Support for a single or bulk upload. Strictly prohibit from uploading company data or other band files
+            </p> -->
+          </nz-upload>
+          }
+        </div>
+      </div>
+      @if (f['name'].errors?.['required'] && f['name'].touched) {
+      <p style="color: var(--app-danger)">الصورة مطلوب</p>
+      } @else {
+      <p></p>
+      }
+    </div>
+  </div>
+</form>

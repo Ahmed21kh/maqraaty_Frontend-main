@@ -1,70 +1,65 @@
-import { Component, OnInit } from '@angular/core';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-import { NzFormModule } from 'ng-zorro-antd/form';
-import { NzGridModule } from 'ng-zorro-antd/grid';
-import { NzImageModule } from 'ng-zorro-antd/image';
-import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AappServiceService } from '../../services/aapp-service.service';
-import { DataItem } from '../registered-students/registered-students.component';
-import { NzMessageModule, NzMessageService } from 'ng-zorro-antd/message';
+import { RouterLink } from '@angular/router';
+import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzIconModule } from 'ng-zorro-antd/icon';
-import { environment } from '../../../environments/environment';
-import { RouterLink, RouterModule } from '@angular/router';
-import { NzLayoutModule } from 'ng-zorro-antd/layout';
-import { debounceTime, Subject, tap } from 'rxjs';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { debounceTime, Subject } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ApiService } from '../../core/services/api.service';
+import { toStudentViews } from '../../core/utils/student.mapper';
+import { normalizeArabic } from '../../core/utils/text.util';
+import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
+
+const MAX_RESULTS = 8;
+
+interface QuickLink {
+  label: string;
+  icon: string;
+  route: string;
+}
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [
-    NzInputModule,
-    NzButtonModule,
-    NzFormModule,
-    NzGridModule,
-    NzImageModule,
-    NzAutocompleteModule,
-    FormsModule,
-    NzMessageModule,
-    NzIconModule,
-    RouterLink,
-    RouterModule,
-    NzLayoutModule
-  ],
+  imports: [FormsModule, RouterLink, NzInputModule, NzAutocompleteModule, NzIconModule, StudentAvatarComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.component.html',
-  styleUrl: './home.component.less'
+  styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit {
-  inputValue?: string;
-  options: any[] = [];
-  url: string = environment.apiUrl;
-  studentsData: DataItem[] = [];
-  private debouncedFilter$ = new Subject<string>();
-  constructor(private appService:AappServiceService , private msg:NzMessageService) { }
- getAllStudentsData(){
-  this.appService.getStudents_names().subscribe({next:async(res)=>{
-    console.log(res);
-    this.studentsData = await res;
-    console.log(this.studentsData);
-  },error:(err)=>{
-    console.log(err);
-    this.msg.error(err.message)
+export class HomeComponent {
+  private readonly api = inject(ApiService);
 
-  }})
- }
-  ngOnInit(): void {
-    this.getAllStudentsData()
-    this.debouncedFilter$.pipe(
-      debounceTime(300),
-      tap(value => {
-        this.options = value? this.studentsData.filter(student => student.name.toLowerCase().includes(value.toLowerCase())): [];
-      })
-    ).subscribe();
+  readonly quickLinks: QuickLink[] = [
+    { label: 'اضافة طالب', icon: 'user-add', route: '/add-student' },
+    { label: 'الطلاب النشطين', icon: 'usergroup-add', route: '/registerd' },
+    { label: 'اليومية', icon: 'dollar', route: '/payments' },
+    { label: 'الحضور', icon: 'audit', route: '/attendance' },
+    { label: 'التقارير', icon: 'pie-chart', route: '/reports' },
+  ];
+
+  protected readonly inputValue = signal('');
+  private readonly query = signal('');
+  private readonly typed$ = new Subject<string>();
+
+  /** View-models are built once per students list (memoised per student), not on every keystroke. */
+  private readonly students = computed(() => toStudentViews(this.api.activeStudentsName()));
+
+  protected readonly options = computed(() => {
+    const q = normalizeArabic(this.query());
+    if (!q) return [];
+    return this.students()
+      .filter((s) => s.searchKey.includes(q))
+      .slice(0, MAX_RESULTS);
+  });
+
+  constructor() {
+    this.api.ensureActiveNames();
+    this.typed$.pipe(debounceTime(250), takeUntilDestroyed()).subscribe((value) => this.query.set(value));
   }
 
-  onInput(event: Event): void {
-    // const value = (event.target as HTMLInputElement).value;
-    const inputElement = event.target as HTMLInputElement;
-    this.debouncedFilter$.next(inputElement.value);
+  protected onInput(value: string): void {
+    this.inputValue.set(value);
+    this.typed$.next(value);
   }
 }

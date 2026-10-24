@@ -1,16 +1,19 @@
 <div class=" w-full ">
-  <app-breadcrumb></app-breadcrumb>
+  <app-page-header icon="dollar" subtitle="اختر الطالب لعرض حساب اشتراكاته"></app-page-header>
   <nz-row [nzGutter]="10">
    <nz-col [nzSpan]="24">
      <nz-card nzTitle="حساب الطالب" nzBordered class=" !rounded-md !my-4 shadow-md" >
-       <nz-select [nzSize]="'large'" dir="rtl" (ngModelChange)="onSelect($event)" [ngModel]="selectedVal"  [nzAllowClear]="true" [nzShowSearch]="true" [nzDropdownStyle]="{'direction':'rtl'}" nzPlaceHolder="اختر اسم الطالب" class=" w-full">
-         @for (item of students_Name; track $index) {
-           <nz-option  [nzKey]="$index" [nzValue]="item._id" [nzLabel]="item.name"></nz-option>
-         }
-       </nz-select>
+       <app-student-select size="large" [ngModel]="selectedVal" (ngModelChange)="onSelect($event)" />
      </nz-card>
 
 
   </nz-col>
  </nz-row>
+ @if (selectedId) {
+   <app-student-payment-details [embeddedId]="selectedId" />
+ } @else {
+   <div class="app-card mt-2 py-10">
+     <app-empty-state icon="user" title="لم يتم اختيار طالب" description="اختر اسم الطالب من القائمة بالاعلى لعرض حساب اشتراكاته وسجل مدفوعاته" />
+   </div>
+ }
 </div>

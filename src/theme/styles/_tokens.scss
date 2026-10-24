@@ -1,0 +1,89 @@
+// Design tokens — single source of truth for the app palette.
+// Exposed as CSS variables so Tailwind utilities (see tailwind.config.js), component styles and the
+// ng-zorro overrides (_antd-overrides.scss) all read the same values.
+//
+// SettingsService (src/theme/settings.service.ts) overrides the user-tunable ones inline on <html>
+// (--app-primary, --app-secondary, radii, font…). Everything derived from them uses color-mix(),
+// so changing the primary/secondary colour re-tints the whole UI automatically.
+
+:root,
+html.light {
+  --app-primary: #1884ff;
+  --app-secondary: #0fb5ae;
+  --app-on-primary: #ffffff;
+
+  --app-success: #16a34a;
+  --app-danger: #e5484d;
+  --app-warning: #f59e0b;
+  --app-whatsapp: #25d366;
+
+  --app-bg: #f4f6fa;
+  --app-surface: #ffffff;
+  --app-surface-2: #f8fafc;
+  --app-border: #e6eaf1;
+  --app-text: #1d2433;
+  --app-text-muted: #6b7587;
+
+  --app-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
+  --app-shadow-hover: 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 28px rgba(16, 24, 40, 0.1);
+  --app-glass: rgba(255, 255, 255, 0.78);
+
+  --app-sidebar-base: #0a1428; // what the primary/secondary are mixed into
+  --app-tint-soft: 12%;
+}
+
+html.dark {
+  --app-primary: #3c9aff;
+  --app-secondary: #2dd4bf;
+
+  --app-success: #34d399;
+  --app-danger: #ff6b70;
+  --app-warning: #fbbf24;
+
+  --app-bg: #0e1116;
+  --app-surface: #171b22;
+  --app-surface-2: #1d222b;
+  --app-border: #272d38;
+  --app-text: #e7eaf0;
+  --app-text-muted: #9099aa;
+
+  --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.28);
+  --app-shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.4);
+  --app-glass: rgba(23, 27, 34, 0.78);
+
+  --app-sidebar-base: #080c14;
+  --app-tint-soft: 18%;
+}
+
+// Shape / typography defaults (SettingsService overrides these inline).
+:root {
+  --app-radius-sm: 8px;
+  --app-radius: 12px;
+  --app-radius-lg: 16px;
+  --app-radius-control: 10px;
+
+  --app-font: 'Cairo', sans-serif;
+  --app-font-size: 14px;
+  --app-font-scale: 1;
+
+  --app-cell-pad: 16px;
+  --app-sidebar-width: 280px;
+  --app-sidebar-item-radius: 8px;
+}
+
+// Colours derived from the (possibly user-chosen) primary / secondary.
+// Declared on html (not :root alone) so the dark block above can't shadow them.
+html {
+  --app-primary-soft: color-mix(in srgb, var(--app-primary) var(--app-tint-soft), transparent);
+  --app-primary-hover: color-mix(in srgb, var(--app-primary) 82%, #fff);
+  --app-primary-active: color-mix(in srgb, var(--app-primary) 82%, #000);
+  --app-secondary-soft: color-mix(in srgb, var(--app-secondary) var(--app-tint-soft), transparent);
+  --app-success-soft: color-mix(in srgb, var(--app-success) var(--app-tint-soft), transparent);
+  --app-danger-soft: color-mix(in srgb, var(--app-danger) var(--app-tint-soft), transparent);
+  --app-warning-soft: color-mix(in srgb, var(--app-warning) var(--app-tint-soft), transparent);
+
+  // Sidebar gradient: primary at the top fading through a primary/base blend into secondary-tinted base.
+  --app-sidebar-from: color-mix(in srgb, var(--app-primary) 78%, var(--app-sidebar-base));
+  --app-sidebar-via: color-mix(in srgb, var(--app-primary) 38%, var(--app-sidebar-base));
+  --app-sidebar-to: color-mix(in srgb, var(--app-secondary) 22%, var(--app-sidebar-base));
+}

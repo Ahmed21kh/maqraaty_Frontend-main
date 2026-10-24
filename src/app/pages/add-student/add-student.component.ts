@@ -1,6 +1,8 @@
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { Component, OnInit } from '@angular/core';
+import { ImageOnlyUploadDirective } from '../../shared/directives/image-only-upload.directive';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -24,7 +26,7 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadFile, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map, Observable, of } from 'rxjs';
@@ -36,7 +38,7 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { NzSkeletonModule } from 'ng-zorro-antd/skeleton';
 
 interface DataItem {
@@ -82,8 +84,10 @@ interface ColumnItem {
   selector: 'app-add-student',
   standalone: true,
   imports: [
+    StudentSelectComponent,
+    ImageOnlyUploadDirective,
     NzGridModule,
-    BreadcrumbComponent,
+    PageHeaderComponent,
     NzTableModule,
     NzButtonModule,
     NzIconModule,
@@ -220,7 +224,7 @@ export class AddStudentComponent {
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService
+    private appService: ApiService
   ) {}
 
   myForm = this.fb.group({
@@ -353,10 +357,8 @@ export class AddStudentComponent {
     if (this.searchPhone) {
       x += `phone=${this.searchPhone?this.searchPhone?.trim():''}&`;
     }
-    console.log(x);
     this.loadingSearch = true
     this.appService.searchStudent(x,this.pageNumber,this.pageSize).subscribe({next:async(data:any)=>{
-    console.log(data?.data);
     this.listOfData = await data?.data
     this.count = await data?.metaData?.count;
     this.totalPages = await data?.metaData?.totalPages
@@ -374,26 +376,21 @@ export class AddStudentComponent {
     this.appService.getStudent_code().subscribe({
       next: async(data) => {
         // console.log(data);
-        console.log(data?.code);
 
         this.studentCode = await data?.code
         this.loadingData = false
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
   }
 
   changelistofupload(event:NzUploadFile[]){
-   console.log(event);
-   console.log(this.myForm.value);
   }
 
  readonly handleRemoveFile:((file: NzUploadFile) => boolean | Observable<boolean>) = (event?:NzUploadFile) => {
-    console.log(event);
     if (event?.status == 'removed') {
       this.myForm.patchValue({
         image:''
@@ -429,7 +426,6 @@ export class AddStudentComponent {
     this.getStudentsName()
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfStudents();
 
@@ -470,9 +466,6 @@ export class AddStudentComponent {
       });
   }
   handleOk(): void {
-    console.log(this.myForm.valid);
-    console.log(this.myForm.errors);
-    console.log(this.myForm.value);
     if (this.myForm.value.has_relative == "نعم") {
 
       this.arr_relative.controls.forEach(data => data.markAllAsTouched())
@@ -480,15 +473,11 @@ export class AddStudentComponent {
       this.arr_relative.controls.forEach(data => data.clearValidators())
 
     }
-    console.log(this.myForm.valid);
 
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-      console.log(this.myForm.value);
       this.loadingAdd = true;
       this.appService.addStudent(this.myForm.value).subscribe({
         next: async(res) => {
-          console.log(res);
         this.msg.success('تم الاضافة بنجاح');
         this.handleAddAttendance(res.data._id)
         this.getDataOfStudents().then(() => {
@@ -557,9 +546,7 @@ export class AddStudentComponent {
 
     }
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
 
-      console.log(this.myForm.value);
       this.isEdit = true;
       this.loadingAEdit = true;
       this.appService
@@ -571,7 +558,6 @@ export class AddStudentComponent {
         )
         .subscribe({
           next: (data) => {
-            console.log(data);
 
             this.msg.success('تم التحديث بنجاح');
             this.loadingAEdit = false;
@@ -592,7 +578,6 @@ export class AddStudentComponent {
   }
 
   handleCancel(): void {
-    console.log('Button cancel clicked!');
     this.isVisible = false;
     this.loadingAdd = false;
     this.loadingAEdit = false;
@@ -603,12 +588,10 @@ export class AddStudentComponent {
   }
   handleChange({ file, fileList }: NzUploadChangeParam): void {
     const status = file.status;
-    console.log(file);
     if (status !== 'uploading') {
-      console.log(file, fileList);
     }
     if (status === 'done') {
-      this.msg.success(`${file.name} file uploaded successfully.`);
+      this.msg.success('تم رفع الصورة بنجاح');
       this.myForm.setValue({
         image: file?.response?.path || null,
         name: this.myForm.value.name || null,
@@ -628,13 +611,12 @@ export class AddStudentComponent {
         amount:this.myForm.value.amount || null
       });
     } else if (status === 'error') {
-      this.msg.error(`${file.name} file upload failed.`);
+      this.msg.error('فشل رفع الصورة');
     }
   }
 
 
   handleAddAttendance(id:string){
-    console.log(id);
 
     let obj:AttendanceItem = {
       date:new Date().toUTCString(),
@@ -642,7 +624,6 @@ export class AddStudentComponent {
       attend_days_month:this.appService.getDatesAndDays()
     }
    this.appService.addAttendance(obj,id).subscribe({next:(res)=>{
-     console.log(res);
 
    },error:(err)=>{
     this.msg.error(err.message)

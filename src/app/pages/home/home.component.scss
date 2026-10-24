@@ -1,0 +1,116 @@
+.home {
+  position: absolute;
+  inset: 0;
+  background-image: url('../../../assets/home2.jpeg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+.verse {
+  font-size: clamp(1.5rem, 3.6vw, 3rem);
+  font-family: 'Amiri Quran', 'Scheherazade New', 'Traditional Arabic', serif !important; // Quran-style script
+  font-weight: 400;
+  line-height: 1.7;
+  margin: 0; // the global <p> bottom margin was adding to the flex gap
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  transition: background 0.2s, transform 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.24);
+    transform: translateY(-2px);
+  }
+}
+
+// The search field sits on a photo, so it uses the translucent "glass" surface from the theme tokens:
+// light glass + dark text in the light theme, dark glass + light text in the dark theme.
+:host ::ng-deep .ant-input-affix-wrapper {
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  background: var(--app-glass);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+
+  .ant-input {
+    background: transparent;
+    color: var(--app-text);
+  }
+
+  .ant-input::placeholder {
+    color: var(--app-text-muted);
+  }
+
+  .anticon {
+    color: var(--app-text-muted);
+  }
+}
+
+// Text entrance: title drops in, the verse rises and its glow breathes, then the search box fades up.
+.home-title {
+  animation: home-drop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.home-verse {
+  animation:
+    home-rise 0.9s 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    home-glow 3.5s 1.2s ease-in-out infinite;
+}
+
+.home-verse ~ div {
+  animation: home-rise 0.8s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes home-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+
+@keyframes home-glow {
+  50% {
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 26px color-mix(in srgb, var(--app-secondary) 70%, transparent);
+  }
+}
+
+// Bigger search: taller box, larger text and icon.
+.home-search ::ng-deep .ant-input-affix-wrapper {
+  min-height: 50px;
+  padding-inline: 20px;
+  font-size: 16px;
+  border-radius: 16px;
+}
+
+.home-search ::ng-deep .ant-input-affix-wrapper input {
+  font-size: 16px;
+}
+
+.home-search ::ng-deep .ant-input-prefix .anticon {
+  font-size: 18px;
+}
+
+// Centre the content beside the floating sidebar (the hero image itself still runs under it).
+.home > div {
+  padding-right: calc(1rem + var(--hero-pad-r, 0px));
+  padding-left: calc(1rem + var(--hero-pad-l, 0px));
+}

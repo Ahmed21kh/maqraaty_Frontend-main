@@ -1,0 +1,192 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+.sidebar {
+  // Gradient colours come from the primary/secondary tokens (see theme/styles/_tokens.scss).
+  // Floating glass panel: rounded, inset from the screen edge, translucent so the page blurs behind it.
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--app-sidebar-from) 82%, transparent) 0%,
+    color-mix(in srgb, var(--app-sidebar-via) 78%, transparent) 55%,
+    color-mix(in srgb, var(--app-sidebar-to) 82%, transparent) 100%
+  );
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  margin: 12px;
+  height: calc(100vh - 24px) !important;
+  color: #fff;
+  width: var(--app-sidebar-width);
+  // same duration/easing as the content margin in the shell, so panel and page move as one
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+
+  &.is-collapsed {
+    width: 80px;
+  }
+}
+
+.sidebar-brand {
+  min-height: 76px;
+  text-decoration: none;
+}
+
+.brand-name {
+  color: #fff;
+  animation: brand-in 0.35s 0.08s ease both;
+}
+
+@keyframes brand-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+
+.is-collapsed .sidebar-brand {
+  justify-content: center;
+  padding-inline: 0;
+}
+
+// ------------------------------------------------------------ style variants (Settings → sidebar)
+:host-context(html[data-sidebar-style='solid']) .sidebar {
+  background: color-mix(in srgb, var(--app-sidebar-via) 80%, transparent);
+}
+
+:host-context(html[data-sidebar-style='light']) {
+  .sidebar {
+    background: var(--app-surface);
+    color: var(--app-text);
+    border-inline-start: 1px solid var(--app-border);
+  }
+
+  .brand-name {
+    color: var(--app-text);
+  }
+}
+
+// antd's inline menu paints its own opaque background; let the sidebar surface show through.
+:host ::ng-deep .app-menu.ant-menu {
+  // labels never wrap while the panel is still growing/shrinking; they fade in once there is room
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    white-space: nowrap;
+  }
+
+  &:not(.ant-menu-inline-collapsed) .ant-menu-title-content {
+    animation: label-in 0.3s 0.1s ease both;
+  }
+  background: transparent;
+  border-inline-end: 0;
+
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: var(--app-sidebar-item-radius);
+  }
+
+  .ant-menu-item:hover,
+  .ant-menu-submenu-title:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .ant-menu-item-selected {
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: #fff !important;
+    font-weight: 600;
+    // accent bar in the secondary colour
+    box-shadow: inset -3px 0 0 var(--app-secondary);
+  }
+
+  .ant-menu-sub.ant-menu-inline {
+    background: transparent;
+  }
+}
+
+:host-context(html[data-sidebar-pos='left']) ::ng-deep .app-menu.ant-menu .ant-menu-item-selected {
+  box-shadow: inset 3px 0 0 var(--app-secondary);
+}
+
+:host-context(html[data-sidebar-style='light']) ::ng-deep .app-menu.ant-menu {
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    color: var(--app-text);
+  }
+
+  .ant-menu-item:hover,
+  .ant-menu-submenu-title:hover {
+    color: var(--app-primary);
+    background: var(--app-surface-2);
+  }
+
+  .ant-menu-item-selected {
+    background: var(--app-primary-soft) !important;
+    color: var(--app-primary) !important;
+
+    // antd paints the label span white on its dark menu theme — make it follow the item colour.
+    .ant-menu-title-content,
+    .anticon,
+    span {
+      color: var(--app-primary) !important;
+    }
+  }
+
+  .ant-menu-submenu-arrow {
+    color: var(--app-text-muted);
+  }
+}
+
+// Expanded: roomy rows, icon on the start side with a gap before the label.
+:host ::ng-deep .app-menu.ant-menu:not(.ant-menu-inline-collapsed) {
+  padding-inline: 10px;
+
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    height: 46px;
+    line-height: 46px;
+    margin-block: 4px;
+    margin-inline: 0;
+    width: 100%;
+    font-size: calc(var(--app-font-size) + 2px);
+  }
+
+  .ant-menu-item .anticon,
+  .ant-menu-submenu-title .anticon {
+    font-size: 20px;
+  }
+
+  .ant-menu-item .anticon + span,
+  .ant-menu-submenu-title .anticon + span {
+    margin-inline-start: 12px;
+  }
+}
+
+// Collapsed: antd centres the icon itself — only size the hit area.
+:host ::ng-deep .app-menu.ant-menu-inline-collapsed {
+  .ant-menu-item,
+  .ant-menu-submenu-title {
+    height: 46px;
+    line-height: 46px;
+    margin-block: 4px;
+  }
+
+  // antd's own collapsed rules (16px, higher specificity) otherwise shrink the submenu icon.
+  .ant-menu-item .anticon,
+  .ant-menu-submenu-title .anticon,
+  > .ant-menu-submenu > .ant-menu-submenu-title .anticon {
+    font-size: 22px !important;
+    line-height: 46px !important;
+  }
+}
+
+@keyframes label-in {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}

@@ -44,3 +44,6 @@ Thumbs.db
 .vercel
 
 .package-lock.json
+
+# build output
+/win32

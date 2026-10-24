@@ -15,3 +15,13 @@
 ::ng-deep.slick-list {
   direction: rtl !important;
 }
+
+// phones: tighter carousel gutters so the month chips stay readable
+@media (max-width: 767px) {
+  ::ng-deep.carousel {
+    padding-inline: 16px !important;
+  }
+  ::ng-deep.slick-initialized .slick-slide {
+    margin-inline: 4px !important;
+  }
+}

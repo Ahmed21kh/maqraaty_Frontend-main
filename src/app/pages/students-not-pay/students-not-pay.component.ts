@@ -1,6 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
+import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
+import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -11,7 +15,7 @@ import {
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import {
   FormArray,
@@ -24,7 +28,8 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
+import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -36,15 +41,21 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from '../../pipes/empty.pipe';
-import { OrderByPipe } from '../../pipes/order-by/order-by.pipe';
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from '../../shared/pipes/empty.pipe';
+import { OrderByPipe } from '../../shared/pipes/order-by/order-by.pipe';
 import { SlickCarouselComponent, SlickCarouselModule } from 'ngx-slick-carousel';
-import moment from 'moment';
 import { parse } from 'date-fns';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { WhatsappSocketService } from '../../core/whatsapp/whatsapp-socket.service';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzTooltipDirective } from "ng-zorro-antd/tooltip";
+
+/** Months 1–12 for the month picker. */
+const MONTH_NUMBERS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 export interface DataItem {
   _id: string;
   code: number;
@@ -91,8 +102,11 @@ interface ColumnItem {
   host: { ngSkipHydration: 'true' },
   standalone: true,
   imports: [
+    MonthCarouselComponent,
+    FilterBarComponent,
+    EditStudentsModalComponent,
     NzGridModule,
-    BreadcrumbComponent,
+    PageHeaderComponent, StatCardComponent,
     NzTableModule,
     NzButtonModule,
     NzIconModule,
@@ -115,10 +129,13 @@ interface ColumnItem {
     SlickCarouselModule,
     NzSpinModule,
     NzCardModule,
-    NzTagModule
-  ],
+    NzTagModule,
+    NzPopconfirmModule,
+    NzTooltipDirective
+],
   templateUrl: './students-not-pay.component.html',
   styleUrl: './students-not-pay.component.scss',
+  providers: [NzModalService]
 })
 export class StudentsNotPayComponent implements OnInit {
   isVisible = false;
@@ -128,6 +145,11 @@ export class StudentsNotPayComponent implements OnInit {
   searchCode: string = '';
   studentId = '';
   isDeleteModal = false;
+  private readonly modalService = inject(NzModalService);
+  private readonly whatsappService = inject(WhatsappSocketService);
+  readonly bulkInProgress = this.whatsappService.bulkInProgress;
+  readonly bulkProgress = this.whatsappService.bulkProgress;
+  readonly bulkResults = this.whatsappService.bulkResults;
   listOfData: DataItem[] = [];
   url: string = environment.apiUrl;
   listOfColumns: ColumnItem[] = [
@@ -215,6 +237,15 @@ export class StudentsNotPayComponent implements OnInit {
       filterMultiple: false,
       listOfFilter: [],
       filterFn: null,
+    },
+    {
+      name: 'الحالة',
+      sortOrder: null,
+      sortDirections: [],
+      sortFn: null,
+      filterMultiple: false,
+      listOfFilter: [],
+      filterFn: null,
     }
   ];
   pageSize: number = 100;
@@ -229,6 +260,8 @@ export class StudentsNotPayComponent implements OnInit {
   students_Name: Student_Names[] = [];
   student_Data!: DataItem;
   showStudent: boolean = false;
+  editingStudent = false;
+  @ViewChild(EditStudentsModalComponent) editForm?: EditStudentsModalComponent;
   nameContent!: string;
   loadingPay: boolean = false;
   isDeActivate: boolean = false;
@@ -257,29 +290,50 @@ export class StudentsNotPayComponent implements OnInit {
     .split('T')[0];
 
   totalAmount: number = 0;
-  @ViewChild('slickModal') slickModal!:SlickCarouselComponent
+  @ViewChild('slickModal') slickModal!:SlickCarouselComponent;
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService
+    private appService: ApiService
   ) {}
 
   slideConfig = { slidesToShow: 6, slidesToScroll: 2 ,infinite:false , rtl:true };
+
   slickInit(e: any) {
-    console.log('slick initialized' , e);
-    // this.slickModal.slickGoTo(9)
+    if (this.activeMonth) {
+      this.centerMonth(this.activeMonth);
+    }
+  }
+
+  private centerMonth(month: any) {
+    const index = this.listofMonths.indexOf(month);
+    if (index === -1) return;
+
+    const slidesToShow = this.slideConfig.slidesToShow;
+    const centerOffset = Math.floor(slidesToShow / 2);
+
+    let targetIndex = index - centerOffset;
+
+    // clamp so we don't scroll past the start
+    if (targetIndex < 0) targetIndex = 0;
+
+    // clamp so we don't scroll past the end
+    const maxIndex = this.listofMonths.length - slidesToShow;
+    if (targetIndex > maxIndex) targetIndex = Math.max(maxIndex, 0);
+
+    // slight delay ensures slick has fully initialized before programmatic scroll
+    setTimeout(() => {
+      this.slickModal?.slickGoTo(targetIndex);
+    }, 0);
   }
 
   breakpoint(e: any) {
-    console.log('breakpoint');
   }
 
   afterChange(e: any) {
-    console.log('afterChange');
   }
 
   beforeChange(e: any) {
-    console.log('beforeChange');
   }
 
   myForm = this.fb.group({
@@ -337,16 +391,31 @@ export class StudentsNotPayComponent implements OnInit {
   });
   openShowStudent(data: DataItem) {
     // this.getOneUser(id).then(()=>{
+    this.editingStudent = false;
     this.student_Data = data;
     this.showStudent = true;
     // })
   }
+  /** The details modal saved the student in place: leave edit mode, show the fresh data and refresh the list. */
+  onStudentSaved(): void {
+    this.editingStudent = false;
+    const id = this.student_Data?._id;
+    if (id) {
+      this.appService.getOne_student(id).subscribe({
+        next: (fresh) => (this.student_Data = { ...this.student_Data, ...fresh }),
+      });
+    }
+    this.getDataOfStudents();
+  }
+
   closeShowStudent() {
+    this.editingStudent = false;
     this.showStudent = false;
   }
+  // O(1) id→name lookup (index rebuilt only when the students list instance changes)
+  private readonly nameResolver = createNameResolver(() => this.students_Name);
   getNameOfOneStudent(id: string) {
-    let student = this.students_Name.filter((data) => data._id == id)[0]?.name;
-    return student;
+    return this.nameResolver(id);
   }
 
   handleAdd(title: string) {
@@ -436,13 +505,11 @@ export class StudentsNotPayComponent implements OnInit {
     if (this.endDate) {
       x += `&endDate=${this.endDate}`;
     }
-    console.log(x);
     this.loadingSearch = true;
     this.appService
       .getNotPayStudents(x, this.pageNumber, this.pageSize)
       .subscribe({
         next: async (data: any) => {
-          console.log(data?.data);
           this.listOfData = await data?.data;
           // this.count = await data?.metaData?.count;
           this.total = await data?.metaData[0]?.total;
@@ -470,7 +537,6 @@ export class StudentsNotPayComponent implements OnInit {
       .getNotPayStudents(x, this.pageNumber, this.pageSize)
       .subscribe({
         next: async (data) => {
-          console.log(data);
           this.total = await data?.metaData[0]?.total;
           this.listOfData = await data.data;
           // this.count = await data?.metaData[0]?.total;
@@ -479,23 +545,28 @@ export class StudentsNotPayComponent implements OnInit {
           let months = await data.data.map(
             (d: any) => new Date(d.date).getMonth() + 1
           );
-          console.log(months);
 
           let uniqMonth = new Set([...months]);
-          const monthNames = moment.months();
-          const monthNumbers = monthNames.map((name) => {
-            const date = parse(name, 'MMMM', new Date());
-            return date.getMonth() + 1; // getMonth() returns 0-based month, hence +1
-          });
-          this.listofMonths = monthNumbers;
+          this.listofMonths = MONTH_NUMBERS;
           this.loadingData = false;
-          console.log(this.listOfData);
         },
         error: (err) => {
-          console.log(err);
           this.msg.error(err.message);
         },
       });
+  }
+
+  /**
+   * Opens the paid-expenses page on the same month that is selected here (first → last calendar day),
+   * so "what is owed" and "what was collected" can be compared for the same period.
+   */
+  paidExpensesParams(): { from: string; to: string } {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const lastDay = new Date(this.currentYear, this.activeMonth, 0).getDate();
+    return {
+      from: `${this.currentYear}-${pad(this.activeMonth)}-01`,
+      to: `${this.currentYear}-${pad(this.activeMonth)}-${pad(lastDay)}`,
+    };
   }
 
   handleChangeMonth(month: number) {
@@ -520,7 +591,7 @@ export class StudentsNotPayComponent implements OnInit {
     this.handleSearchQuery();
   }
   async getStudentsName() {
-    this.appService.getStudents_names().subscribe({
+    this.appService.getStudents_names("active").subscribe({
       next: async (data) => {
         this.students_Name = await data;
       },
@@ -544,14 +615,11 @@ export class StudentsNotPayComponent implements OnInit {
   ngOnInit(): void {
     this.getDataOfStudents();
     // this.getStudentsName()
-    console.log(this.listOfData);
     this.date = [this.startDate, this.endDate];
   }
 
   onChange(result: Date[]): void {
     if (result.length > 0) {
-      console.log('start: ', result[0].toLocaleDateString().split('T')[0]);
-      console.log('end: ', result[1].toLocaleDateString().split('T')[0]);
       this.startDate = result[0]
         .toLocaleDateString('en-CA', {
           year: 'numeric',
@@ -575,7 +643,6 @@ export class StudentsNotPayComponent implements OnInit {
   }
 
   changePagination(e: any) {
-    console.log(e);
     this.pageNumber = e;
     this.getDataOfStudents();
   }
@@ -584,9 +651,10 @@ export class StudentsNotPayComponent implements OnInit {
     this.isEdit = false;
   }
 
-  handleOpenConfirmPay(id: any): void {
-    this.studentId = id;
+  handleOpenConfirmPay(data: any): void {
+    this.studentId = data?._id;
     this.isDeleteModal = true;
+    this.student_Data = data
   }
 
   handleCancelConfirmpay(): void {
@@ -617,7 +685,6 @@ export class StudentsNotPayComponent implements OnInit {
   }
 
   handlePay() {
-    // this.isDeleteModal = false;
     this.loadingPay = true;
     const { date , amount } = this.payForm.value;
     const date1:any = date
@@ -631,6 +698,7 @@ export class StudentsNotPayComponent implements OnInit {
         next: (response) => {
           this.msg.success('تم الدفع بنجاح');
           this.resetPayData();
+          this.confirmPay(this.student_Data);
           this.getDataOfStudents().then(() => {
             this.isDeleteModal = false;
             this.loadingPay = false;
@@ -642,24 +710,19 @@ export class StudentsNotPayComponent implements OnInit {
         },
       });
   }
+
+
   handleOk(): void {
-    console.log(this.myForm.valid);
-    console.log(this.myForm.errors);
-    console.log(this.myForm.value);
     if (this.myForm.value.has_relative == 'نعم') {
       this.arr_relative.controls.map((data) => data.markAllAsTouched());
     } else {
       this.arr_relative.controls.map((data) => data.clearValidators());
     }
-    console.log(this.myForm.valid);
 
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-      console.log(this.myForm.value);
       this.loadingAdd = true;
       this.appService.addStudent(this.myForm.value).subscribe({
         next: async (res) => {
-          console.log(res);
           this.msg.success('تم الاضافة بنجاح');
           this.handleAddAttendance(res.data._id);
           this.getDataOfStudents().then(() => {
@@ -724,9 +787,7 @@ export class StudentsNotPayComponent implements OnInit {
       this.arr_relative.controls.map((data) => data.clearValidators());
     }
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
 
-      console.log(this.myForm.value);
       this.isEdit = true;
       this.loadingAEdit = true;
       this.appService
@@ -738,7 +799,6 @@ export class StudentsNotPayComponent implements OnInit {
         )
         .subscribe({
           next: (data) => {
-            console.log(data);
 
             this.msg.success('تم التحديث بنجاح');
             this.loadingAEdit = false;
@@ -758,7 +818,6 @@ export class StudentsNotPayComponent implements OnInit {
   }
 
   handleCancel(): void {
-    console.log('Button cancel clicked!');
     this.isVisible = false;
     this.loadingAdd = false;
     this.loadingAEdit = false;
@@ -769,12 +828,10 @@ export class StudentsNotPayComponent implements OnInit {
   }
   handleChange({ file, fileList }: NzUploadChangeParam): void {
     const status = file.status;
-    console.log(file);
     if (status !== 'uploading') {
-      console.log(file, fileList);
     }
     if (status === 'done') {
-      this.msg.success(`${file.name} file uploaded successfully.`);
+      this.msg.success('تم رفع الصورة بنجاح');
       this.myForm.setValue({
         image: file?.response?.path || null,
         name: this.myForm.value.name || null,
@@ -794,12 +851,11 @@ export class StudentsNotPayComponent implements OnInit {
         amount: this.myForm.value.amount || null,
       });
     } else if (status === 'error') {
-      this.msg.error(`${file.name} file upload failed.`);
+      this.msg.error('فشل رفع الصورة');
     }
   }
 
   handleAddAttendance(id: string) {
-    console.log(id);
 
     let obj: AttendanceItem = {
       date: new Date().toUTCString(),
@@ -808,7 +864,6 @@ export class StudentsNotPayComponent implements OnInit {
     };
     this.appService.addAttendance(obj, id).subscribe({
       next: (res) => {
-        console.log(res);
       },
       error: (err) => {
         this.msg.error(err.message);
@@ -824,6 +879,54 @@ export class StudentsNotPayComponent implements OnInit {
   handleCancelConfirmDeActivate(): void {
     this.isDeActivate = false;
     this.studentId = '';
+  }
+
+  confirmNotPay(data: any): void {
+    this.studentId = data?._id;
+    let phoneList = [];
+    const studentDetails = data;
+    const motherPhone = studentDetails?.phone_2?.[0] || undefined;
+    const fatherPhone = studentDetails?.phone_3?.[0] || undefined;
+    let message = `السلام عليكم ورحمة الله وبركاته.
+
+السادة أولياء الأمور الكرام نذكركم بسرعة سداد المصروفات.
+مقرأة الإمام الشافعي.
+جزاكم الله خيرًا.`
+    if(motherPhone) {
+      const phone = motherPhone?.trim();
+       phoneList.push(phone)
+    }
+
+    if(fatherPhone) {
+      const phone = fatherPhone?.trim();
+       phoneList.push(phone)
+    }
+    this.whatsappService.sendBulk(phoneList , message);
+  }
+
+  confirmPay(data: any): void {
+    this.studentId = data?._id;
+    let phoneList = [];
+    const studentDetails = data;
+    const name = studentDetails?.name || '';
+    const motherPhone = studentDetails?.phone_2?.[0] || undefined;
+    const fatherPhone = studentDetails?.phone_3?.[0] || undefined;
+    let message = `السلام عليكم ورحمة الله وبركاته.
+
+ تم استلام وسداد المصروفات الخاصة ب  ${name} بنجاح.
+مقرأة الإمام الشافعي.
+
+جزاكم الله خيرًا.`
+    if(motherPhone) {
+      const phone = motherPhone?.trim();
+       phoneList.push(phone)
+    }
+
+    if(fatherPhone) {
+      const phone = fatherPhone?.trim();
+       phoneList.push(phone)
+    }
+    this.whatsappService.sendBulk(phoneList , message);
   }
 
   handleActivate_deActivate_Student() {

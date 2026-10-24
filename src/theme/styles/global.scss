@@ -1,0 +1,70 @@
+@use 'tokens';
+@use 'antd-overrides';
+@use 'motion';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+// Cairo is loaded from index.html (preconnect + swap); other families are loaded on demand by
+// SettingsService when the user picks them.
+* {
+  font-family: var(--app-font) !important;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  // Tailwind sizes are rem-based, so scaling the root scales the whole UI with the font-size setting.
+  font-size: calc(16px * var(--app-font-scale));
+}
+
+body {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  display: inline-block !important;
+}
+
+// Keyboard users get a visible focus ring; mouse users don't.
+:focus-visible {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+// Scrollbars: a visible track with a clearly coloured thumb (the old pale thumb on a transparent track
+// looked like a stray line rather than a scrollbar).
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+  background-color: var(--app-surface-2);
+}
+::-webkit-scrollbar-track {
+  background: var(--app-surface-2);
+  border-inline-start: 1px solid var(--app-border);
+}
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--app-text-muted) 55%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+  &:hover {
+    background-color: var(--app-text-muted);
+  }
+}
+::-webkit-scrollbar-corner {
+  background: var(--app-surface-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important; // an infinite 0.01ms loop would flicker
+    transition-duration: 0.01ms !important;
+  }
+}

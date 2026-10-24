@@ -1,0 +1,140 @@
+<app-page-header icon="account-book" subtitle="سجل كل المبالغ التي تم تحصيلها من الطلاب خلال الفترة المختارة">
+  <nz-date-picker
+    actions
+    nzMode="year"
+    nzSize="large"
+    class="w-[170px] !rounded-xl"
+    aria-label="السنة"
+    nzFormat="yyyy"
+    nzPlaceHolder="اختر السنة"
+    [nzAllowClear]="false"
+    [nzInputReadOnly]="true"
+    [nzDisabledDate]="disabledYear"
+    [ngModel]="yearDate()"
+    (ngModelChange)="onYearPicked($event)"
+  ></nz-date-picker>
+</app-page-header>
+
+<!-- ------------------------------------------------------------------ totals for the filtered period -->
+<div class="mb-5 grid grid-cols-1 gap-4 tablet:grid-cols-2 desk:grid-cols-4">
+  <app-stat-card
+    label="اجمالي المصروفات المدفوعة"
+    icon="dollar"
+    tone="success"
+    suffix="ج"
+    [value]="summary().totalAmount | number: '1.0-0'"
+    [hint]="periodLabel()"
+    [loading]="loading()"
+  />
+  <app-stat-card label="عدد المدفوعات" icon="account-book" [value]="summary().paymentsCount | number" [loading]="loading()" />
+  <app-stat-card label="عدد الطلاب الذين دفعوا" icon="team" tone="warning" [value]="summary().studentsCount | number" [loading]="loading()" />
+  <app-stat-card
+    label="متوسط الدفعة"
+    icon="dollar"
+    tone="neutral"
+    suffix="ج"
+    [value]="summary().averagePayment | number: '1.0-0'"
+    [loading]="loading()"
+  />
+</div>
+
+<!-- ------------------------------------------------------------------ period picker -->
+<app-section-card class="mb-5" title="الفترة" [subtitle]="periodLabel()">
+  <div actions class="flex flex-wrap items-center gap-2">
+    <span class="text-sm text-app-muted">او حدد فترة مخصصة :</span>
+    <nz-range-picker
+      nzSize="large"
+      class="!rounded-xl"
+      [ngModel]="rangeModel()"
+      (ngModelChange)="onRange($event)"
+      [nzAllowClear]="true"
+      [nzInputReadOnly]="true"
+      nzFormat="dd-MM-yyyy"
+      [nzPlaceHolder]="['من تاريخ', 'الى تاريخ']"
+    ></nz-range-picker>
+  </div>
+
+  <div class="month-strip" role="group" aria-label="اختيار الشهر">
+    <button
+      type="button"
+      class="chip chip-all"
+      [class.is-active]="!customRange() && month() === null"
+      [attr.aria-pressed]="!customRange() && month() === null"
+      (click)="selectMonth(null)"
+    >
+      <span class="chip-name">السنة كلها</span>
+      <span class="chip-total">{{ yearTotal() | number: '1.0-0' }}</span>
+    </button>
+    @for (m of monthChips(); track m.month) {
+      <button
+        type="button"
+        class="chip"
+        [class.is-active]="!customRange() && month() === m.month"
+        [attr.aria-pressed]="!customRange() && month() === m.month"
+        (click)="selectMonth(m.month)"
+      >
+        <span class="chip-name">{{ m.name }}</span>
+        <span class="chip-total">{{ m.total | number: '1.0-0' }}</span>
+        <span class="chip-bar"><i [style.width.%]="m.percent"></i></span>
+      </button>
+    }
+  </div>
+</app-section-card>
+
+<!-- ------------------------------------------------------------------ ledger -->
+<app-section-card title="سجل المدفوعات" [subtitle]="(total() | number) + ' عملية دفع'" [padded]="false">
+  <div actions class="w-[420px] max-w-full">
+    <app-search-bar placeholder="ابحث بالاسم او الكود او رقم الهاتف" size="large" [loading]="loading()" (search)="onSearch($event)" />
+  </div>
+
+  @if (failed()) {
+    <app-empty-state icon="warning" title="تعذر تحميل البيانات" description="تأكد من تشغيل النظام ثم حاول مرة اخرى">
+      <button nz-button nzType="primary" (click)="retry()">اعادة المحاولة</button>
+    </app-empty-state>
+  } @else if (!loading() && !rows().length) {
+    <app-empty-state icon="account-book" title="لا توجد مدفوعات في هذه الفترة" description="جرب اختيار شهر اخر او تغيير كلمة البحث" />
+  } @else {
+    <nz-table #ledger dir="rtl" [nzData]="rows()" [nzFrontPagination]="false" [nzShowPagination]="false" [nzLoading]="loading()">
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>الطالب</th>
+          <th>رقم الهاتف</th>
+          <th>المبلغ</th>
+          <th>حالة الطالب</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of ledger.data; track row._id) {
+          <tr>
+            <td class="whitespace-nowrap">{{ row.date | date: 'dd-MM-yyyy' }}</td>
+            <td>
+              <a class="flex items-center gap-3 no-underline" [routerLink]="['/student-account', row.studentDetails._id]">
+                <app-student-avatar [name]="row.studentDetails.name" [image]="row.studentDetails.image" [size]="36" />
+                <span class="flex flex-col leading-tight">
+                  <span class="font-semibold text-app-text">{{ row.studentDetails.name }}</span>
+                  <small class="text-app-muted">كود {{ row.studentDetails.code }}</small>
+                </span>
+              </a>
+            </td>
+            <td>{{ phonesOf(row) | phones }}</td>
+            <td class="whitespace-nowrap font-semibold text-app-success">{{ row.amount | number }} ج</td>
+            <td>
+              <app-status-badge [tone]="row.studentDetails.active_status === 'in_active' ? 'danger' : 'success'">
+                {{ row.studentDetails.active_status === 'in_active' ? 'غير نشط' : 'نشط' }}
+              </app-status-badge>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </nz-table>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 border-t border-app-border px-5 py-3">
+      <span class="text-sm text-app-muted">
+        اجمالي الفترة : <b class="text-app-text">{{ summary().totalAmount | number }} ج</b>
+        — يعرض {{ rows().length }} من {{ total() | number }}
+      </span>
+      <nz-pagination [nzPageIndex]="pageIndex()" [nzPageSize]="pageSize" [nzTotal]="total()" (nzPageIndexChange)="onPage($event)"></nz-pagination>
+    </div>
+  }
+</app-section-card>

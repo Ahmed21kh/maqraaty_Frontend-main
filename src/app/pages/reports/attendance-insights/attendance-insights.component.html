@@ -1,0 +1,73 @@
+<section class="mt-8" aria-labelledby="attendance-insights-title">
+  <header class="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h2 id="attendance-insights-title" class="text-xl font-bold text-app-text">احصائيات الحضور بالمقرأة</h2>
+      <p class="text-sm text-app-muted">{{ periodLabel() }}</p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <nz-segmented [nzOptions]="modeOptions" [ngModel]="idx(modeOptions, mode())" (ngModelChange)="setMode($event)"></nz-segmented>
+      <nz-segmented [nzOptions]="scopeOptions" [ngModel]="idx(scopeOptions, scope())" (ngModelChange)="setScope($event)"></nz-segmented>
+    </div>
+  </header>
+
+  @if (failed()) {
+    <div class="app-card">
+      <app-empty-state icon="warning" title="تعذر تحميل احصائيات الحضور" description="تأكد من تشغيل النظام ثم حاول مرة اخرى">
+        <button nz-button nzType="primary" (click)="retry()">اعادة المحاولة</button>
+      </app-empty-state>
+    </div>
+  } @else {
+    <!-- ------------------------------------------------------------ key numbers -->
+    <div class="mb-5 grid grid-cols-1 gap-4 tablet:grid-cols-2 desk:grid-cols-4">
+      <app-stat-card
+        label="نسبة الحضور"
+        icon="audit"
+        [value]="rateText()"
+        hint="الحضور ÷ (الحضور + الغياب) للايام المسجلة"
+        [loading]="loading()"
+      />
+      <app-stat-card label="مرات الحضور" icon="user-add" tone="success" [value]="summary()?.present | number" [loading]="loading()" />
+      <app-stat-card label="مرات الغياب" icon="user-delete" tone="danger" [value]="summary()?.absent | number" [loading]="loading()" />
+      <app-stat-card
+        label="الطلاب القادمون"
+        icon="team"
+        tone="warning"
+        [value]="(summary()?.students?.came | number) + ' من ' + (summary()?.students?.scheduled | number)"
+        [hint]="'نسبتهم ' + cameText()"
+        [loading]="loading()"
+      />
+    </div>
+
+    <!-- ------------------------------------------------------------ distributions -->
+    <div class="mb-5 grid grid-cols-1 gap-4 desk:grid-cols-3">
+      <app-section-card title="توزيع الحضور" [subtitle]="periodLabel()" [loading]="loading()">
+        <app-donut-chart [segments]="attendanceDonut()" [centerValue]="rateText()" centerLabel="نسبة الحضور" />
+      </app-section-card>
+      <app-section-card title="الطلاب القادمون" [subtitle]="periodLabel()" [loading]="loading()">
+        <app-donut-chart [segments]="studentsDonut()" [centerValue]="cameText()" centerLabel="حضروا مرة على الاقل" />
+      </app-section-card>
+      <app-section-card title="الطلاب النشطون" subtitle="الوضع الحالي" [loading]="loading()">
+        <app-donut-chart [segments]="activeDonut()" [centerValue]="activeText()" centerLabel="نسبة النشطين" />
+      </app-section-card>
+    </div>
+
+    <!-- ------------------------------------------------------------ charts -->
+    <div class="mb-5">
+      <app-section-card
+        title="الحضور بالمقرأة"
+        [subtitle]="mode() === 'month' ? 'حضور وغياب كل يوم دراسة في ' + periodLabel() : 'حضور وغياب كل شهر في ' + periodLabel()"
+        [loading]="loading()"
+      >
+        <app-bar-chart [categories]="barCategories()" [series]="barSeries()" [stacked]="true" [height]="300" ariaLabel="الحضور والغياب" />
+      </app-section-card>
+    </div>
+
+    <app-section-card
+      [title]="'نسبة الحضور ونسبة الطلاب القادمين خلال سنة ' + year()"
+      [subtitle]="mode() === 'month' ? 'الشهر المحدد مظلل' : 'لكل شهر من السنة'"
+      [loading]="loading()"
+    >
+      <app-line-chart [categories]="months" [series]="lineSeries()" [highlight]="highlight()" [height]="280" />
+    </app-section-card>
+  }
+</section>

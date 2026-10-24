@@ -1,6 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
+import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -25,7 +26,7 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -38,30 +39,14 @@ import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from "../../pipes/empty.pipe";
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from "../../shared/pipes/empty.pipe";
 import { NzCardModule } from 'ng-zorro-antd/card';
+import { Student_Names } from '../../core/models/app.model';
+import { NzTagComponent } from "ng-zorro-antd/tag";
+import { WhatsappSocketService } from '../../core/whatsapp/whatsapp-socket.service';
 
-interface Student_Names {
-  _id: string;
-  code: number;
-  name: string;
-  image: string;
-  phone_1: string[];
-  phone_2: string[];
-  phone_3: string[];
-  age:number;
-  study_year:string,
-  has_relative:string;
-  relative:string[];
-  is_payment:string;
-  is_Azhar:string;
-  landline: string;
-  address: string;
-  notes: string;
-  date:Date,
-  amount:number
-}
+
 interface DataItem {
   _id: string;
   amount:number;
@@ -86,31 +71,33 @@ interface ColumnItem {
     templateUrl: './payments.component.html',
     styleUrl: './payments.component.scss',
     imports: [
-        NzGridModule,
-        BreadcrumbComponent,
-        NzTableModule,
-        NzButtonModule,
-        NzIconModule,
-        NzInputModule,
-        NzModalModule,
-        NzFormModule,
-        FormsModule,
-        ReactiveFormsModule,
-        NzUploadModule,
-        NzImageModule,
-        NzPaginationModule,
-        NzDatePickerModule,
-        NzInputNumberModule,
-        NzRadioModule,
-        NzSelectModule,
-        CommonModule,
-        NzDividerModule,
-        RouterModule,
-        EmptyPipe,
-        NzCardModule
-    ]
+    StudentSelectComponent,
+    NzGridModule,
+    PageHeaderComponent,
+    NzTableModule,
+    NzButtonModule,
+    NzIconModule,
+    NzInputModule,
+    NzModalModule,
+    NzFormModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NzUploadModule,
+    NzImageModule,
+    NzPaginationModule,
+    NzDatePickerModule,
+    NzInputNumberModule,
+    NzRadioModule,
+    NzSelectModule,
+    CommonModule,
+    NzDividerModule,
+    RouterModule,
+    EmptyPipe,
+    NzCardModule,
+    NzTagComponent
+]
 })
-export class PaymentsComponent {
+export class PaymentsComponent implements OnInit {
   isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -179,7 +166,7 @@ export class PaymentsComponent {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
+  students_Name = (this.appService.ensureActiveNames(), this.appService.activeStudentsName);
   student_Data!:DataItem ;
   showStudent:boolean = false;
   nameContent!:string;
@@ -189,10 +176,13 @@ export class PaymentsComponent {
   defaultDate:any = new Date().toISOString().split("T")[0]
   totalAmount:number = 0
   payLoading:boolean=false;
+  studentNameVal = signal('')
+  private readonly whatsappService = inject(WhatsappSocketService);
+  readonly bulkInProgress = this.whatsappService.bulkInProgress;
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService,
+    private appService: ApiService,
     private route: ActivatedRoute
     // private ngControl : NgControl
   ) {}
@@ -206,28 +196,28 @@ export class PaymentsComponent {
   get pf() {
     return this.paymentForm.controls;
   }
+
+  hasStudentError():boolean {
+    return this.pf.student.errors?.['required']&&this.pf['student'].touched;
+  }
+
+  hasAmountError():boolean {
+    return this.pf.amount.errors?.['required']&&this.pf['amount'].touched;
+  }
   // @Input() set disableControl( condition : boolean ) {
   //   const action = condition ? 'disable' : 'enable';
   //   this.ngControl.control![action]();
   // }
 
   compareDate(date:any){
-    console.log(date == new Date().toISOString().split("T")[0]);
-    console.log(date);
-    console.log(new Date().toISOString().split("T")[0]);
     let val = date !== new Date().toLocaleDateString("en-CA")
-    console.log(val);
    return val
   }
  closeShowStudent(){
   this.showStudent = false;
  }
- studentName(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name
-  return student
- }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name;
+ Val(id:string){
+  let student = this.students_Name().find(data => data._id == id)?.name
   return student
  }
 
@@ -242,7 +232,6 @@ export class PaymentsComponent {
   }
 
   onChange(result: Date): void {
-    console.log('onChange: ', result);
     if (result !== null) {
       this.dateFilter = result.toISOString().split("T")[0]
       this.getDataOfPayments()
@@ -252,9 +241,9 @@ export class PaymentsComponent {
       this.getDataOfPayments()
     }
   }
+
   async getDataOfPayments() {
     const date = this.route.snapshot.queryParamMap.get('date');
-     console.log(date);
      if (date) {
       this.dateFilter = date;
      }
@@ -271,22 +260,11 @@ export class PaymentsComponent {
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
   }
 
-  async getStudentsName(){
-    this.appService.getStudents_names('active').subscribe({
-      next:async(data)=>{
-        this.students_Name = await data;
-      },
-      error:(err)=>{
-        this.msg.error(err.message)
-      }
-    })
-  }
 
   // async getOneUser(Id:string){
   //   this.appService.getOne_student(Id).subscribe({
@@ -330,39 +308,27 @@ export class PaymentsComponent {
   }
   getSubscriptionVal(){
    this.paymentForm.value.student == null? this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false}):this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-   console.log(this.paymentForm.value);
 
   this.paymentForm.valueChanges.subscribe((res)=>{
-    this.subscriptionVal = this.students_Name.filter((d:any)=> d._id == res.student)[0]?.amount
-    console.log(this.subscriptionVal);
+    this.subscriptionVal = this.students_Name().find((d:any)=> d._id == res.student)?.amount || 0;
 
     if (this.subscriptionVal==null) {
      this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false})
-     console.log("null ====>",res);
-     console.log(this.paymentForm.value);
     } else {
      this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-     console.log(this.paymentForm.controls.amount.valid);
-     console.log(this.paymentForm.controls.amount.disabled);
 
-     console.log("not null ====>",res);
-     console.log(this.paymentForm.value);
     }
 
-   console.log(this.students_Name.filter((d:any)=> d._id == res.student));
+   this.student_Data = this.students_Name().find((d:any)=> d._id == res.student) as any;
 
   })
   }
   submit(data:FormGroup){
-    console.log(data.errors);
-    console.log(data.valid);
-    console.log(data.controls?.['amount'].valid);
     if (data.valid&&data.controls?.['amount'].valid) {
-    console.log(data.value);
     this.payLoading = true;
     const { date , amount ,student} = data.value
     this.appService.addPayment({date:this.dateFilter,amount},student).subscribe({next:(data)=>{
-      console.log(data);
+      this.confirmPay(this.student_Data);
       this.msg.success("تم الدفع بنجاح")
       this.getDataOfPayments()
       this.resetData()
@@ -376,16 +342,19 @@ export class PaymentsComponent {
     data.markAllAsTouched()
   }
 
-
   }
+
+  selectStudent(value: any) {
+
+    // this.studentNameVal.set(value ?? '');
+  }
+
   ngOnInit(): void {
     this.getDataOfPayments();
-    this.getStudentsName()
     this.getSubscriptionVal();
 
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfPayments();
 
@@ -420,11 +389,33 @@ updatePayment(){
  })
 }
 
+confirmPay(data: any): void {
+  this.studentId = data?._id;
+  let phoneList = [];
+  const studentDetails = data;
+  const name = studentDetails?.name || '';
+  const motherPhone = studentDetails?.phone_2?.[0] || undefined;
+  const fatherPhone = studentDetails?.phone_3?.[0] || undefined;
+  let message = `السلام عليكم ورحمة الله وبركاته.
+
+تم استلام وسداد المصروفات الخاصة ب  ${name} بنجاح.
+مقرأة الإمام الشافعي.
+
+جزاكم الله خيرًا.`
+  if(motherPhone) {
+    const phone = motherPhone?.trim();
+     phoneList.push(phone)
+  }
+
+  if(fatherPhone) {
+    const phone = fatherPhone?.trim();
+     phoneList.push(phone)
+  }
+  this.whatsappService.sendBulk(phoneList , message);
+}
 
 
-
-
-  validate(){
+validate(){
     this.paymentForm.controls.amount.markAllAsTouched()
     this.paymentForm.controls.date.markAllAsTouched()
   }

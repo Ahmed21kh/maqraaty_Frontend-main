@@ -1,6 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
+import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
+import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
+import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { ImageOnlyUploadDirective } from '../../shared/directives/image-only-upload.directive';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -24,7 +30,8 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
+import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -36,15 +43,18 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from '../../pipes/empty.pipe';
-import { OrderByPipe } from "../../pipes/order-by/order-by.pipe";
-import moment from 'moment';
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from '../../shared/pipes/empty.pipe';
+import { OrderByPipe } from "../../shared/pipes/order-by/order-by.pipe";
 import { parse } from 'date-fns';
 import { SlickCarouselModule } from 'ngx-slick-carousel';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+
+/** Months 1–12 for the month picker. */
+const MONTH_NUMBERS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 export interface DataItem {
   _id: string;
   code: number;
@@ -94,8 +104,13 @@ interface ColumnItem {
   host: { ngSkipHydration: 'true' },
   standalone: true,
   imports: [
+    StudentSelectComponent,
+    MonthCarouselComponent,
+    FilterBarComponent,
+    EditStudentsModalComponent,
+    ImageOnlyUploadDirective,
     NzGridModule,
-        BreadcrumbComponent,
+        PageHeaderComponent, StatCardComponent,
         NzTableModule,
         NzButtonModule,
         NzIconModule,
@@ -232,6 +247,8 @@ export class InActiveStudentsComponent implements OnInit  {
   students_Name: Student_Names[] = [];
   student_Data!:DataItem ;
   showStudent:boolean = false;
+  editingStudent = false;
+  @ViewChild(EditStudentsModalComponent) editForm?: EditStudentsModalComponent;
   nameContent!:string;
   loadingActive:boolean = false;
   loadingDelete:boolean = false;
@@ -252,24 +269,47 @@ export class InActiveStudentsComponent implements OnInit  {
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService
+    private appService: ApiService
   ) {}
 
   slideConfig = { slidesToShow: 6, slidesToScroll: 2 ,infinite:false , rtl:true };
-slickInit(e: any) {
-  console.log('slick initialized');
-}
+  @ViewChild('slickModal') slickModal: any;
+
+  slickInit(e: any) {
+    if (this.activeMonth) {
+      this.centerMonth(this.activeMonth);
+    }
+  }
+
+  private centerMonth(month: any) {
+    const index = this.listofMonths.indexOf(month);
+    if (index === -1) return;
+
+    const slidesToShow = this.slideConfig.slidesToShow;
+    const centerOffset = Math.floor(slidesToShow / 2);
+
+    let targetIndex = index - centerOffset;
+
+    // clamp so we don't scroll past the start
+    if (targetIndex < 0) targetIndex = 0;
+
+    // clamp so we don't scroll past the end
+    const maxIndex = this.listofMonths.length - slidesToShow;
+    if (targetIndex > maxIndex) targetIndex = Math.max(maxIndex, 0);
+
+    // slight delay ensures slick has fully initialized before programmatic scroll
+    setTimeout(() => {
+      this.slickModal?.slickGoTo(targetIndex);
+    }, 0);
+  }
 
 breakpoint(e: any) {
-  console.log('breakpoint');
 }
 
 afterChange(e: any) {
-  console.log('afterChange');
 }
 
 beforeChange(e: any) {
-  console.log('beforeChange');
 }
 
   myForm = this.fb.group({
@@ -322,16 +362,31 @@ beforeChange(e: any) {
   })
  openShowStudent(data:DataItem){
   // this.getOneUser(id).then(()=>{
+    this.editingStudent = false;
     this.student_Data = data;
     this.showStudent = true;
   // })
  }
- closeShowStudent(){
-  this.showStudent = false;
+  /** The details modal saved the student in place: leave edit mode, show the fresh data and refresh the list. */
+  onStudentSaved(): void {
+    this.editingStudent = false;
+    const id = this.student_Data?._id;
+    if (id) {
+      this.appService.getOne_student(id).subscribe({
+        next: (fresh) => (this.student_Data = { ...this.student_Data, ...fresh }),
+      });
+    }
+    this.getDataOfStudents();
+  }
+
+  closeShowStudent(){
+  this.editingStudent = false;
+    this.showStudent = false;
  }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name;
-  return student
+ // O(1) id→name lookup (index rebuilt only when the students list instance changes)
+ private readonly nameResolver = createNameResolver(() => this.students_Name);
+ getNameOfOneStudent(id: string) {
+   return this.nameResolver(id);
  }
 
   handleAdd(title:string) {
@@ -402,7 +457,6 @@ beforeChange(e: any) {
     if (this.searchPhone) {
       x += `&phone=${this.searchPhone?.trim()}`;
     }
-    console.log(x);
     this.getDataOfStudents(x)
     // this.loadingSearch = true
     // this.appService.searchStudent(x,this.pageNumber,this.pageSize).subscribe({next:async(data:any)=>{
@@ -433,14 +487,13 @@ beforeChange(e: any) {
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
   }
 
   async getStudentsName(){
-    this.appService.getStudents_names().subscribe({
+    this.appService.getStudents_names("active").subscribe({
       next:async(data)=>{
         this.students_Name = await data;
       },
@@ -465,7 +518,6 @@ beforeChange(e: any) {
     this.activeMonth = month;
     this.activatedDaate.setMonth(month - 1);
     this.activatedDaate = this.activatedDaate
-    console.log(month);
     this.startDate = new Date(this.currentYear, month - 1, 0)
       .toLocaleDateString('en-CA', {
         year: 'numeric',
@@ -485,15 +537,9 @@ beforeChange(e: any) {
   ngOnInit(): void {
     this.getDataOfStudents();
     this.getStudentsName();
-    const monthNames = moment.months();
-  const monthNumbers = monthNames.map((name) => {
-    const date = parse(name, 'MMMM', new Date());
-    return date.getMonth() + 1; // getMonth() returns 0-based month, hence +1
-  });
-  this.listofMonths = monthNumbers;
+          this.listofMonths = MONTH_NUMBERS;
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfStudents();
 
@@ -550,7 +596,6 @@ beforeChange(e: any) {
   handleDeActivate() {
     // this.isDeleteModal = false;
     this.loadingActive = true;
-    console.log(this.activatedDaate);
 
     this.appService
       .activateStudent(this.studentId , 'active', this.activatedDaate)
@@ -574,9 +619,6 @@ beforeChange(e: any) {
       });
   }
   handleOk(): void {
-    console.log(this.myForm.valid);
-    console.log(this.myForm.errors);
-    console.log(this.myForm.value);
     if (this.myForm.value.has_relative == "نعم") {
 
       this.arr_relative.controls.map(data => data.markAllAsTouched())
@@ -584,15 +626,11 @@ beforeChange(e: any) {
       this.arr_relative.controls.map(data => data.clearValidators())
 
     }
-    console.log(this.myForm.valid);
 
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-      console.log(this.myForm.value);
       this.loadingAdd = true;
       this.appService.addStudent(this.myForm.value).subscribe({
         next: async(res) => {
-          console.log(res);
         this.msg.success('تم الاضافة بنجاح');
         this.handleAddAttendance(res.data._id)
         this.getDataOfStudents().then(() => {
@@ -660,9 +698,7 @@ beforeChange(e: any) {
 
     }
     if (this.myForm.valid) {
-      console.log('Button ok clicked!');
 
-      console.log(this.myForm.value);
       this.isEdit = true;
       this.loadingAEdit = true;
       this.appService
@@ -674,7 +710,6 @@ beforeChange(e: any) {
         )
         .subscribe({
           next: (data) => {
-            console.log(data);
 
             this.msg.success('تم التحديث بنجاح');
             this.loadingAEdit = false;
@@ -694,7 +729,6 @@ beforeChange(e: any) {
   }
 
   handleCancel(): void {
-    console.log('Button cancel clicked!');
     this.isVisible = false;
     this.loadingAdd = false;
     this.loadingAEdit = false;
@@ -705,12 +739,10 @@ beforeChange(e: any) {
   }
   handleChange({ file, fileList }: NzUploadChangeParam): void {
     const status = file.status;
-    console.log(file);
     if (status !== 'uploading') {
-      console.log(file, fileList);
     }
     if (status === 'done') {
-      this.msg.success(`${file.name} file uploaded successfully.`);
+      this.msg.success('تم رفع الصورة بنجاح');
       this.myForm.setValue({
         image: file?.response?.path || null,
         name: this.myForm.value.name || null,
@@ -730,13 +762,12 @@ beforeChange(e: any) {
         amount:this.myForm.value.amount || null
       });
     } else if (status === 'error') {
-      this.msg.error(`${file.name} file upload failed.`);
+      this.msg.error('فشل رفع الصورة');
     }
   }
 
 
   handleAddAttendance(id:string){
-    console.log(id);
 
     let obj:AttendanceItem = {
       date:new Date().toUTCString(),
@@ -744,7 +775,6 @@ beforeChange(e: any) {
       attend_days_month:this.appService.getDatesAndDays()
     }
    this.appService.addAttendance(obj,id).subscribe({next:(res)=>{
-     console.log(res);
 
    },error:(err)=>{
     this.msg.error(err.message)

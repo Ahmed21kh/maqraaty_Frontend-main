@@ -38,28 +38,23 @@
             ],
             "styles": [
               "node_modules/ng-zorro-antd/ng-zorro-antd.variable.min.css",
-              "src/theme.less",
-              "src/styles.scss",
+              "src/theme/styles/antd-base.less",
+              "src/theme/styles/global.scss",
               "node_modules/slick-carousel/slick/slick.scss",
               "node_modules/slick-carousel/slick/slick-theme.scss",
               {
-                "input": "src/styles/variables.less",
-                "bundleName": "custom-theme",
-                "inject": false
-              },
-              {
-                "input": "src/styles/light.less",
+                "input": "node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
                 "bundleName": "light",
                 "inject": false
               },
               {
-                "input": "src/styles/dark.less",
+                "input": "node_modules/ng-zorro-antd/ng-zorro-antd.dark.min.css",
                 "bundleName": "dark",
                 "inject": false
               }
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/styles/themes"]
+              "includePaths": ["src/theme/styles/themes"]
             },
             "scripts": [
               "node_modules/jquery/dist/jquery.min.js",
@@ -68,7 +63,12 @@
           },
           "configurations": {
             "production": {
-              "optimization": true,
+              "baseHref": "./",
+              "optimization": {
+                "scripts": true,
+                "fonts": true,
+                "styles": { "minify": true, "inlineCritical": false }
+              },
               "namedChunks": false,
               "budgets": [
                 {
@@ -124,7 +124,7 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": ["src/styles.scss"],
+            "styles": ["src/theme/styles/global.scss"],
             "scripts": []
           }
         }

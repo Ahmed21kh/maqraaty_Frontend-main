@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
+import { Component, OnInit, ViewContainerRef, ViewChild } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
-import { BreadcrumbComponent } from '../../components/breadcrumb/breadcrumb.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { NzTableModule } from 'ng-zorro-antd/table';
 import {
   NzTableFilterFn,
@@ -11,7 +13,7 @@ import {
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
 import { NzFormModule } from 'ng-zorro-antd/form';
 import {
   FormArray,
@@ -24,7 +26,8 @@ import {
 } from '@angular/forms';
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
-import { AappServiceService } from '../../services/aapp-service.service';
+import { ApiService } from '../../core/services/api.service';
+import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -36,13 +39,15 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { CommonModule } from '@angular/common';
 import { NzDividerModule } from 'ng-zorro-antd/divider';
-import { environment } from '../../../environments/environment.development';
-import { EmptyPipe } from '../../pipes/empty.pipe';
-import { OrderByPipe } from "../../pipes/order-by/order-by.pipe";
+import { environment } from '../../../environments/environment';
+import { EmptyPipe } from '../../shared/pipes/empty.pipe';
+import { OrderByPipe } from "../../shared/pipes/order-by/order-by.pipe";
 import { NzToolTipModule } from 'ng-zorro-antd/tooltip';
 import { NzSpinModule } from 'ng-zorro-antd/spin';
 import { NzCardModule } from 'ng-zorro-antd/card';
 import { NzTagModule } from 'ng-zorro-antd/tag';
+import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
+import { DeleteStudentsModalComponent } from '../../shared/components/delete-students-modal/delete-students-modal.component';
 export interface DataItem {
   _id: string;
   code: number;
@@ -87,8 +92,10 @@ interface ColumnItem {
   selector: 'app-all-students',
   standalone: true,
   imports: [
+    FilterBarComponent,
+    EditStudentsModalComponent,
            NzGridModule,
-            BreadcrumbComponent,
+            PageHeaderComponent, StatCardComponent,
             NzTableModule,
             NzButtonModule,
             NzIconModule,
@@ -116,7 +123,7 @@ interface ColumnItem {
   templateUrl: './all-students.component.html',
   styleUrl: './all-students.component.scss'
 })
-export class AllStudentsComponent {
+export class AllStudentsComponent implements OnInit {
  isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -232,9 +239,11 @@ export class AllStudentsComponent {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
+  students_Name = (this.appService.ensureAllNames(), this.appService.allStudentsName);
   student_Data!:DataItem ;
   showStudent:boolean = false;
+  editingStudent = false;
+  @ViewChild(EditStudentsModalComponent) editForm?: EditStudentsModalComponent;
   nameContent!:string;
   loadingDelete:boolean = false;
   isDeActivate:boolean = false;
@@ -245,7 +254,9 @@ export class AllStudentsComponent {
   constructor(
     private fb: FormBuilder,
     private msg: NzMessageService,
-    private appService: AappServiceService
+    private appService: ApiService,
+    private modal: NzModalService,
+    private viewContainerRef: ViewContainerRef
   ) {}
 
   passForm = this.fb.group({
@@ -304,78 +315,34 @@ export class AllStudentsComponent {
   })
  openShowStudent(data:DataItem){
   // this.getOneUser(id).then(()=>{
+    this.editingStudent = false;
     this.student_Data = data;
     this.showStudent = true;
   // })
  }
- closeShowStudent(){
-  this.showStudent = false;
- }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name;
-  return student
- }
-
-  handleAdd(title:string) {
-    const formControl = new FormControl('',[Validators.min(11),Validators.pattern(/^\d{11}$/)])
-    const formControl2 = new FormControl(null)
-    if (title == "phone_1") {
-    this.arr_phone_1.push(formControl)
-    }else if (title == "phone_2") {
-      this.arr_phone_2.push(formControl)
-    }else if (title == "phone_3") {
-      this.arr_phone_3.push(formControl)
-    }else if (title == "relative") {
-      this.arr_relative.push(formControl2)
+  /** The details modal saved the student in place: leave edit mode, show the fresh data and refresh the list. */
+  onStudentSaved(): void {
+    this.editingStudent = false;
+    const id = this.student_Data?._id;
+    if (id) {
+      this.appService.getOne_student(id).subscribe({
+        next: (fresh) => (this.student_Data = { ...this.student_Data, ...fresh }),
+      });
     }
+    this.getDataOfStudents();
   }
-  handleRemove(index:number,title:string){
-    if (title == "phone_1") {
-      this.arr_phone_1.removeAt(index)
-      }else if (title == "phone_2") {
-        this.arr_phone_2.removeAt(index)
-      }else if (title == "phone_3") {
-        this.arr_phone_3.removeAt(index)
 
-      }else if (title == "relative") {
-        this.arr_relative.removeAt(index)
-      }
-  }
-  resetData() {
-    this.myForm.reset({
-      name: '',
-      phone_1: [],
-      phone_2: [],
-      phone_3: [],
-      age:null,
-      study_year:'',
-      has_relative:'',
-      relative:[],
-      is_payment:'',
-      is_Azhar:'',
-      landline: '',
-      address: '',
-      image: '',
-      notes: '',
-      date:new Date(),
-      amount:null
-    });
-    this.paymentForm.reset({
-      amount:0
-    })
-    this.arr_phone_1.reset([''])
-    this.arr_phone_2.reset([''])
-    this.arr_phone_3.reset([''])
-    this.arr_relative.reset([''])
-    this.passForm.reset({
-      password:null
-    })
-    // this.arr_phone_1.push(new FormControl(''))
-    // this.arr_phone_3.push(new FormControl(''))
-    // this.arr_phone_3.push(new FormControl(''))
-  }
+  closeShowStudent(){
+  this.editingStudent = false;
+    this.showStudent = false;
+ }
+ // O(1) id→name lookup (index rebuilt only when the students list instance changes)
+ private readonly nameResolver = createNameResolver(() => this.students_Name());
+ getNameOfOneStudent(id: string) {
+   return this.nameResolver(id);
+ }
+
    handleSearchQuery(){
-    console.log(this.searchStatus);
 
     let x = "";
     if (this.searchName) {
@@ -390,7 +357,6 @@ export class AllStudentsComponent {
     if (this.searchStatus) {
       x += `&status=${this.searchStatus}`;
     }
-    console.log(x);
     this.getDataOfStudents(x);
   };
   async getDataOfStudents(x:any='') {
@@ -407,21 +373,9 @@ export class AllStudentsComponent {
 
       },
       error: (err) => {
-        console.log(err);
         this.msg.error(err.message)
       },
     });
-  }
-
-  async getStudentsName(){
-    this.appService.getStudents_names().subscribe({
-      next:async(data)=>{
-        this.students_Name = await data;
-      },
-      error:(err)=>{
-        this.msg.error(err.message)
-      }
-    })
   }
 
   async getOneUser(Id:string){
@@ -437,10 +391,8 @@ export class AllStudentsComponent {
 
   ngOnInit(): void {
     this.getDataOfStudents();
-    this.getStudentsName()
   }
   changePagination (e:any) {
-  console.log(e);
   this.pageNumber = e
   this.getDataOfStudents();
 
@@ -451,8 +403,27 @@ export class AllStudentsComponent {
   }
 
     handleOpenConfirmDelete(id: any): void {
-      this.studentId = id;
-      this.isDeleteModal = true;
+      const modal = this.modal.create<DeleteStudentsModalComponent, any>({
+        nzTitle: ' حذف الطالب',
+        nzContent: DeleteStudentsModalComponent,
+        nzViewContainerRef: this.viewContainerRef,
+        nzDraggable:true,
+        nzData: {
+          studentId: id,
+        },
+        nzAutofocus:'ok',
+        nzDirection:'rtl',
+        nzFooter: null
+      });
+      const instance = modal.getContentComponent();
+      // Return a result when closed
+      modal.afterClose.subscribe(result =>{
+        if(result){
+          this.getDataOfStudents();
+        }
+      });
+
+
     }
 
     handleCancelConfirmDelete(): void {
@@ -498,7 +469,6 @@ export class AllStudentsComponent {
   handleActivate_deActivate_Student() {
     // this.isDeleteModal = false;
     this.loadingDeactivate = true;
-    console.log(this.activatedDaate);
 
     this.appService
       .activateStudent(this.studentId , 'in_active' , this.activatedDaate)
@@ -521,171 +491,70 @@ export class AllStudentsComponent {
         },
       });
   }
-  handleOk(): void {
-    console.log(this.myForm.valid);
-    console.log(this.myForm.errors);
-    console.log(this.myForm.value);
-    if (this.myForm.value.has_relative == "نعم") {
 
-      this.arr_relative.controls.map(data => data.markAllAsTouched())
-    }else {
-      this.arr_relative.controls.map(data => data.clearValidators())
-
-    }
-    console.log(this.myForm.valid);
-
-    if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-      console.log(this.myForm.value);
-      this.loadingAdd = true;
-      this.appService.addStudent(this.myForm.value).subscribe({
-        next: async(res) => {
-          console.log(res);
-        this.msg.success('تم الاضافة بنجاح');
-        this.handleAddAttendance(res.data._id)
-        this.getDataOfStudents().then(() => {
-          this.loadingAdd = false;
-          this.isVisible = false;
-          this.resetData();
-        });
-        },
-        error: (err) => {
-          this.msg.error(err.message);
-        },
-      });
-    } else {
-      this.validate()
-
-      // this.myForm.controls.image.markAsTouched();
-    }
-  }
   handleOpenEditModal(data: DataItem) {
     this.studentId = data?._id;
-    this.isEdit = true;
-    this.isVisible = true;
-    this.myForm.setValue({
-      name: data.name,
-      phone_1: data.phone_1,
-      phone_2: data.phone_2,
-      phone_3: data.phone_3,
-      age:data.age,
-      study_year:data.study_year,
-      has_relative:data.has_relative,
-      relative:data.relative,
-      is_payment:data.is_payment,
-      is_Azhar:data.is_Azhar,
-      landline: data.landline,
-      address: data.address,
-      image: data.image,
-      notes: data.notes,
-      date:data.date,
-      amount:data.amount
+    // this.isEdit = true;
+    // this.isVisible = true;
+    const modal = this.modal.create<EditStudentsModalComponent, any>({
+      nzTitle: 'تعديل بيانات الطالب',
+      nzContent: EditStudentsModalComponent,
+      nzViewContainerRef: this.viewContainerRef,
+      nzWidth: '700px',
+      nzStyle: {
+        // 'margin-top': '-38px'
+      },
+      nzDraggable:true,
+      nzBodyStyle: {
+        'overflow-y': 'auto',
+        'max-height': '720px'
+      },
+      nzData: {
+        studentsName: this.students_Name,
+        studentId: data?._id,
+        studentData: data
+      },
+      nzClassName:'edit-modal',
+      nzDirection:'rtl',
+      nzAutofocus:'ok',
+      nzFooter: [
+        {
+          label:'تعديل',
+          type:'primary',
+          shape:'round',
+          loading:(contentComponentInstance) => {
+            return contentComponentInstance?.loadingAEdit || false
+          },
+          onClick:(contentComponentInstance) =>{
+            contentComponentInstance?.handleSubmitEdit()
+          }
+        },
+        {
+          label:'الغاء',
+          shape:'round',
+          onClick:(contentComponentInstance) =>{
+            contentComponentInstance?.handleCancel()
+          }
+        }
+      ]
     });
-  }
-  validate(){
-    this.myForm.controls.name.markAsTouched();
-    this.myForm.controls.landline.markAsTouched();
-    this.myForm.controls.address.markAsTouched();
-    this.myForm.controls.age.markAsTouched();
-    this.myForm.controls.has_relative.markAsTouched();
-    this.myForm.controls.is_Azhar.markAsTouched();
-    this.myForm.controls.is_payment.markAsTouched();
-    this.myForm.controls.date.markAsTouched();
-    this.myForm.controls.relative.markAsTouched();
-    this.myForm.controls.study_year.markAsTouched();
-    this.paymentForm.controls.amount.markAllAsTouched();
-    this.arr_phone_1.controls.map(data => data.markAllAsTouched())
-    this.arr_phone_2.controls.map(data => data.markAllAsTouched())
-    this.arr_phone_3.controls.map(data => data.markAllAsTouched())
-
-  }
-  handleSubmitEdit() {
-    if (this.myForm.value.has_relative == "نعم") {
-
-      this.arr_relative.controls.map(data => data.markAllAsTouched())
-    }else {
-      this.arr_relative.controls.map(data => data.clearValidators())
-
-    }
-    if (this.myForm.valid) {
-      console.log('Button ok clicked!');
-
-      console.log(this.myForm.value);
-      this.isEdit = true;
-      this.loadingAEdit = true;
-      this.appService
-        .updateStudent(this.studentId, this.myForm.value)
-        .pipe(
-          map(() => {
-            // this.msg.loading('loading...')
-          })
-        )
-        .subscribe({
-          next: (data) => {
-            console.log(data);
-
-            this.msg.success('تم التحديث بنجاح');
-            this.loadingAEdit = false;
-            this.getDataOfStudents().then(() => {
-              this.resetData();
-              this.isVisible = false;
-              this.isEdit = false;
-            });
-          },
-          error: (err) => {
-            this.msg.error(err.message);
-            this.loadingAEdit = false;
-          },
+    const instance = modal.getContentComponent();
+    // Return a result when closed
+    modal.afterClose.subscribe(result =>{
+      instance.resetData()
+      if(result){
+        this.getDataOfStudents().then(() => {
         });
-    } else {
-      this.validate()
-    }
+      }
+    });
+
   }
 
   handleCancel(): void {
-    console.log('Button cancel clicked!');
     this.isVisible = false;
-    this.loadingAdd = false;
-    this.loadingAEdit = false;
-    this.resetData();
-    setTimeout(() => {
-      this.isEdit = false;
-    }, 100);
   }
-  handleChange({ file, fileList }: NzUploadChangeParam): void {
-    const status = file.status;
-    console.log(file);
-    if (status !== 'uploading') {
-      console.log(file, fileList);
-    }
-    if (status === 'done') {
-      this.msg.success(`${file.name} file uploaded successfully.`);
-      this.myForm.setValue({
-        image: file?.response?.path || null,
-        name: this.myForm.value.name || null,
-        phone_1: this.myForm.value.phone_1 || [''],
-        phone_2: this.myForm.value.phone_2 || [''],
-        phone_3: this.myForm.value.phone_3 || [''],
-        landline: this.myForm.value.landline || null,
-        address: this.myForm.value.address || null,
-        notes: this.myForm.value.notes || null,
-        age: this.myForm.value.age || null,
-        study_year: this.myForm.value.study_year || null,
-        has_relative: this.myForm.value.has_relative || null,
-        relative: this.myForm.value.relative || [],
-        is_payment: this.myForm.value.is_payment || '',
-        is_Azhar: this.myForm.value.is_Azhar || '',
-        date: new Date() ||null,
-        amount:this.myForm.value.amount || null
-      });
-    } else if (status === 'error') {
-      this.msg.error(`${file.name} file upload failed.`);
-    }
-  }
-
 
   handleAddAttendance(id:string){
-    console.log(id);
 
     let obj:AttendanceItem = {
       date:new Date().toUTCString(),
@@ -693,7 +562,6 @@ export class AllStudentsComponent {
       attend_days_month:this.appService.getDatesAndDays()
     }
    this.appService.addAttendance(obj,id).subscribe({next:(res)=>{
-     console.log(res);
 
    },error:(err)=>{
     this.msg.error(err.message)

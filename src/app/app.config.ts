@@ -1,30 +1,33 @@
-import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
-
-import { routes } from './app.routes';
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter, withInMemoryScrolling, withPreloading, withViewTransitions, PreloadAllModules } from '@angular/router';
 import { provideClientHydration } from '@angular/platform-browser';
-import { provideNzIcons } from './icons-provider';
-import { en_US, provideNzI18n } from 'ng-zorro-antd/i18n';
-import { registerLocaleData } from '@angular/common';
-import en from '@angular/common/locales/en';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { NgIconsModule } from '@ng-icons/core';
-import { featherAirplay, featherSun, featherMoon } from '@ng-icons/feather-icons';
-import { heroSun, heroMoon } from '@ng-icons/heroicons/outline';
-
-registerLocaleData(en);
+import { routes } from './app.routes';
+import { provideCore } from './core/providers/core.providers';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      // Lazy chunks load in the background right after first paint, so navigation feels instant.
+      withPreloading(PreloadAllModules),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled' }),
+      // Cross-fades the old page into the new one (styles: theme/styles/_motion.scss, which also switches
+      // it off for "reduce motion"). Browsers without the View Transitions API simply navigate instantly.
+      withViewTransitions({
+        onViewTransitionCreated: ({ transition }) => {
+          // While the page is frozen for a transition the collapsed sidebar's flyout menu does not get to
+          // close after one of its items is clicked, so navigate instantly when that flyout is open.
+          if (document.querySelector('.ant-menu-submenu-popup:not(.ant-menu-submenu-hidden)')) {
+            const ignore = () => undefined; // skipping rejects `ready` with an AbortError — expected here
+            transition.ready.catch(ignore);
+            transition.finished.catch(ignore);
+            transition.updateCallbackDone.catch(ignore);
+            transition.skipTransition();
+          }
+        },
+      })
+    ),
     provideClientHydration(),
-    provideNzIcons(),
-    provideNzI18n(en_US),
-    importProvidersFrom(FormsModule),
-    importProvidersFrom(HttpClientModule),
-    importProvidersFrom(NgIconsModule.withIcons({ featherAirplay, featherSun, featherMoon, heroSun, heroMoon })),
-    provideAnimations()
-  ]
+    provideCore(),
+  ],
 };

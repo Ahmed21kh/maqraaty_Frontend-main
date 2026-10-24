@@ -1,0 +1,57 @@
+<form class="" dir="rtl">
+  <h1 style="font-size: 22px;">
+    هل انت متأكد من حذف هذا الطالب ؟
+  </h1>
+  <!-- <form [formGroup]="passForm" dir="rtl" class=" my-2">
+    <label for="password">ادخل كلمة السر لتتمكن من الحذف</label>
+    <input
+     [nzStatus]="passf['password'].errors!['pattern']&&'error'"
+      nzSize="large"
+      nz-input
+      class=" rounded-lg mt-2"
+      type="password"
+      id="password"
+      name="password"
+      formControlName="password"
+      placeholder="ادخل كلمة السر"
+    />
+  </form> -->
+    <div
+     *nzModalFooter
+      style="
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        direction: ltr !important;
+      "
+    >
+      <button
+        (click)="handleCancelConfirmDelete()"
+        nz-button
+        nzType="default"
+        style="
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          border-radius: 15px;
+        "
+      >
+        الغاء
+      </button>
+      <button
+        [nzLoading]="loadingDelete"
+        (click)="handleDelete_student()"
+        nz-button
+        nzType="primary"
+        nzDanger
+        style="
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          border-radius: 15px;
+        "
+      >
+        حذف
+      </button>
+    </div>
+</form>

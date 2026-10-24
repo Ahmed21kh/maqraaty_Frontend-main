@@ -1,0 +1,97 @@
+.setting-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--app-border);
+
+  &:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.setting-label {
+  min-width: 0;
+  font-weight: 600;
+  color: var(--app-text);
+
+  small {
+    display: block;
+    margin-top: 2px;
+    font-weight: 400;
+    color: var(--app-text-muted);
+  }
+}
+
+.swatch {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--app-surface);
+  box-shadow: 0 0 0 1px var(--app-border);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.is-active {
+    box-shadow: 0 0 0 2px var(--app-text);
+  }
+
+  &.is-default {
+    background: conic-gradient(var(--app-border), var(--app-text-muted), var(--app-border));
+  }
+}
+
+.color-input {
+  width: 36px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.preset {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: var(--app-surface);
+  color: var(--app-text);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+
+  &:hover {
+    border-color: var(--app-primary);
+    background: var(--app-surface-2);
+  }
+
+  .dots {
+    display: inline-flex;
+
+    i {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid var(--app-surface);
+
+      & + i {
+        margin-inline-start: -6px;
+      }
+    }
+  }
+}

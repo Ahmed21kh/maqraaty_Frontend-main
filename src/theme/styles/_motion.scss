@@ -1,0 +1,144 @@
+// Motion layer: soft fades used across the app. Everything here is switched off by
+//  - Settings → "تقليل الحركة" (html[data-motion='reduced'])
+//  - the OS "reduce motion" preference (media query at the bottom).
+
+@keyframes app-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes app-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes app-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// ---------------------------------------------------------------- page change (View Transitions)
+// Old page fades out, new page fades in. `normal` blend avoids the default additive brightening.
+::view-transition-old(root),
+::view-transition-new(root) {
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  animation: app-fade-out 0.14s ease both;
+}
+
+::view-transition-new(root) {
+  animation: app-fade-in 0.24s ease 0.06s both;
+}
+
+// ---------------------------------------------------------------- content appearing
+// Cards rise in slightly; table rows fade in. Fill mode is `backwards` (not `both`) on purpose: once the
+// animation ends the element returns to its normal style, so no (even identity) `transform` lingers —
+// a lingering transform would trap fixed/absolute descendants such as dropdowns inside the card.
+html body .app-card,
+html body .ant-card {
+  animation: app-fade-up 0.35s ease backwards;
+}
+
+html body .ant-table-tbody > tr.ant-table-row {
+  animation: app-fade-in 0.25s ease backwards;
+}
+
+html body .ant-empty,
+html body .upload-hint {
+  animation: app-fade-in 0.3s ease backwards;
+}
+
+// Toast / popup panels get a fade on top of antd's own motion.
+html body .ant-message-notice-content,
+html body .ant-popover-inner {
+  animation: app-fade-in 0.2s ease backwards;
+}
+
+// Table containers (card-like block around every table) rise in together with their rows.
+html body .ant-table-wrapper {
+  animation: app-fade-up 0.45s ease 0.05s backwards;
+}
+
+// ---------------------------------------------------------------- live status badge
+// A dot with an expanding ring: calm for connected, quicker for disconnected, in between for connecting.
+@keyframes app-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  75%,
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+.status-dot {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: inherit;
+    pointer-events: none;
+    animation: app-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  &.is-connecting::after {
+    animation-duration: 1.2s;
+  }
+
+  &.is-offline::after {
+    animation-duration: 1.4s;
+  }
+}
+
+// ---------------------------------------------------------------- theme / palette change
+// While `theme-fading` is on <html>, colours ease between values instead of snapping.
+html.theme-fading,
+html.theme-fading *,
+html.theme-fading *::before,
+html.theme-fading *::after {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+}
+
+// ---------------------------------------------------------------- opt-outs
+// (no space after the attribute: the view-transition pseudo-elements hang off <html> itself)
+html[data-motion='reduced']::view-transition-group(*),
+html[data-motion='reduced']::view-transition-old(*),
+html[data-motion='reduced']::view-transition-new(*) {
+  animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
