@@ -26,7 +26,7 @@ const text = (v: unknown): string => (v === null || v === undefined ? '' : Strin
   standalone: true,
   imports: [DatePipe, NzIconModule, StatusBadgeComponent, StudentAvatarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'block' },
+  host: { class: 'block', dir: 'rtl' },
   styles: [
     `
       .hero {
