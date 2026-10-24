@@ -1,3 +1,6 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { dateOf } from '../../core/export/export-columns';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -92,6 +95,7 @@ interface ColumnItem {
     templateUrl: './student-payment-details.component.html',
     styleUrl: './student-payment-details.component.scss',
     imports: [
+    ExportMenuComponent,
     StudentAvatarComponent,
     StudentSelectComponent,
       StatusBadgeComponent,
@@ -122,6 +126,20 @@ interface ColumnItem {
     ]
 })
 export class StudentPaymentDetailsComponent implements OnChanges {
+  readonly exportSource = (): ExportOptions => ({
+    title: `حساب الطالب: ${(this.studentDetails as any)?.name ?? ''}`,
+    subtitle: `الاجمالي ${this.totalAmount ?? 0} ج`,
+    fileName: `حساب ${(this.studentDetails as any)?.name ?? 'طالب'}`,
+    columns: [
+      { header: 'الكود', value: (r) => r.studentDetails?.code, width: 9 },
+      { header: 'الاسم', value: (r) => r.studentDetails?.name, width: 30 },
+      { header: 'التاريخ', value: (r) => dateOf(r.date), width: 14 },
+      { header: 'المبلغ', value: (r) => r.amount, width: 12 },
+      { header: 'حالة الدفع', value: (r) => this.paymentStatus(r).label, width: 14 },
+    ],
+    rows: this.listOfData,
+  });
+
   isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -199,7 +217,6 @@ export class StudentPaymentDetailsComponent implements OnChanges {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
   student_Data!:DataItem ;
   showStudent:boolean = false;
   nameContent!:string;
@@ -273,14 +290,6 @@ export class StudentPaymentDetailsComponent implements OnChanges {
  closeShowStudent(){
   this.showStudent = false;
  }
- studentName(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0]?.name
-  return student
- }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0].name;
-  return student
- }
  resetDataForm() {
   this.myForm.reset({
     name: '',
@@ -352,16 +361,6 @@ export class StudentPaymentDetailsComponent implements OnChanges {
     });
   }
 
-  async getStudentsName(){
-    this.appService.getStudents_names("active").subscribe({
-      next:async(data)=>{
-        this.students_Name = await data;
-      },
-      error:(err)=>{
-        this.msg.error(err.message)
-      }
-    })
-  }
 
   handleOpenConfirmDelete(id: any): void {
     this.paymentId = id;
@@ -397,7 +396,7 @@ export class StudentPaymentDetailsComponent implements OnChanges {
    this.paymentForm.value.student == null? this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false}):this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
 
   this.paymentForm.valueChanges.subscribe((res)=>{
-    this.subscriptionVal = this.students_Name.filter((d:any)=> d._id == res.student)[0]?.amount
+    this.subscriptionVal = (this.studentDetails as any)?.amount
 
     if (this.subscriptionVal==null) {
      this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false})
@@ -449,7 +448,6 @@ export class StudentPaymentDetailsComponent implements OnChanges {
 
   ngOnInit(): void {
     this.getDataOfPayments();
-    this.getStudentsName()
     this.getSubscriptionVal()
   }
   changePagination (e:any) {

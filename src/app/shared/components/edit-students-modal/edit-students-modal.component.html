@@ -253,7 +253,7 @@
               /> -->
             <app-student-select scope="" [hiddenIds]="relativeExclusions()" placeholder="اختار الاسم" [formControlName]="$index" />
             @if ($index == 0) {
-            <button (click)="handleAdd('relative')" [disabled]="selectedStudents().length == 0" type="button" nz-button nzType="primary" style="
+            <button (click)="handleAdd('relative')" type="button" nz-button nzType="primary" style="
                 border-radius: 15px;
                 padding: 5px;
                 width: auto;

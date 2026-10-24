@@ -2,7 +2,7 @@
   <div>
     <app-page-header></app-page-header>
     <div class="attendance_table">
-      <section class="mb-5 grid grid-cols-4 gap-4 xl:grid-cols-2 sm:grid-cols-1" aria-label="تفاصيل الحضور">
+<section class="mb-5 grid grid-cols-4 gap-4 xl:grid-cols-2 sm:grid-cols-1" aria-label="تفاصيل الحضور">
         <app-stat-card label="عدد الطلاب" icon="usergroup-add" tone="primary" [value]="attendanceDetails?.totalStudents || 0" [loading]="loadingData" />
         <app-stat-card label="عدد الحضور" icon="user-add" tone="success" [value]="attendanceDetails?.totalAttend || 0" [loading]="loadingData" />
         <app-stat-card label="عدد الغياب" icon="user-delete" tone="danger" [value]="attendanceDetails?.totalAbsent || 0" [loading]="loadingData" />
@@ -40,7 +40,12 @@
           {{1000}}
         </div> -->
       </ng-template>
-      <nz-table dir="rtl" [nzPageSize]="pageSize" #filterTable [nzTotal]="total" [nzShowTotal]="totalData"
+<ng-template #tableToolbar>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+        <app-export-menu [source]="exportSource" />
+        </div>
+      </ng-template>
+      <nz-table [nzTitle]="tableToolbar" dir="rtl" [nzPageSize]="pageSize" #filterTable [nzTotal]="total" [nzShowTotal]="totalData"
         nzPaginationPosition="bottom" [nzFrontPagination]="false" [nzShowPagination]="false" [nzItemRender]="pagination"
         [nzLoading]="loadingSearch || loadingData" (nzPageIndexChange)="changePagination($event)" [nzData]="listOfData"
         nzTableLayout="fixed" [nzFooter]="pagination">
@@ -190,7 +195,7 @@
         </nz-card>
         <div class="mt-4 flex items-center gap-3 px-4" dir="rtl">
           <span class="font-semibold">السنة :</span>
-          <nz-select nzSize="large" class="w-[140px]" [ngModel]="activeYear" (ngModelChange)="handleChangeYear($event)" [nzDropdownStyle]="{ direction: 'rtl' }">
+          <nz-select dir="rtl" nzSize="large" class="w-[140px]" [ngModel]="activeYear" (ngModelChange)="handleChangeYear($event)" [nzDropdownStyle]="{ direction: 'rtl' }">
             @for (y of availableYears; track y) {
               <nz-option [nzValue]="y" [nzLabel]="'' + y"></nz-option>
             }

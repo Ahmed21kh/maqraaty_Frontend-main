@@ -1,3 +1,6 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { PAYMENT_EXPORT_COLUMNS } from '../../core/export/export-columns';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
@@ -30,7 +33,7 @@ import { NzMessageService } from 'ng-zorro-antd/message';
 import { ApiService } from '../../core/services/api.service';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
-import { map } from 'rxjs';
+import { catchError, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
 import { en_US, NzI18nService, zh_CN } from 'ng-zorro-antd/i18n';
 import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
@@ -72,6 +75,7 @@ interface ColumnItem {
     templateUrl: './payments.component.html',
     styleUrl: './payments.component.scss',
     imports: [
+    ExportMenuComponent,
     StudentAvatarComponent,
     StudentSelectComponent,
     NzGridModule,
@@ -100,6 +104,14 @@ interface ColumnItem {
 ]
 })
 export class PaymentsComponent implements OnInit {
+  readonly exportSource = (): ExportOptions => ({
+    title: 'اليومية بالمقرأة',
+    subtitle: `التاريخ: ${this.dateFilter} — الاجمالي ${this.totalAmount ?? 0} ج`,
+    fileName: `اليومية ${this.dateFilter}`,
+    columns: PAYMENT_EXPORT_COLUMNS,
+    rows: this.listOfData,
+  });
+
   isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -168,7 +180,6 @@ export class PaymentsComponent implements OnInit {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name = (this.appService.ensureActiveNames(), this.appService.activeStudentsName);
   student_Data!:DataItem ;
   showStudent:boolean = false;
   nameContent!:string;
@@ -217,10 +228,6 @@ export class PaymentsComponent implements OnInit {
   }
  closeShowStudent(){
   this.showStudent = false;
- }
- Val(id:string){
-  let student = this.students_Name().find(data => data._id == id)?.name
-  return student
  }
 
   resetData() {
@@ -308,22 +315,20 @@ export class PaymentsComponent implements OnInit {
         },
       });
   }
+  /** When a student is picked, load that one student (for the subscription value and the reminder message). */
   getSubscriptionVal(){
-   this.paymentForm.value.student == null? this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false}):this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-
-  this.paymentForm.valueChanges.subscribe((res)=>{
-    this.subscriptionVal = this.students_Name().find((d:any)=> d._id == res.student)?.amount || 0;
-
-    if (this.subscriptionVal==null) {
-     this.paymentForm.controls.amount.disable({onlySelf:true,emitEvent:false})
-    } else {
-     this.paymentForm.controls.amount.enable({onlySelf:true,emitEvent:true})
-
-    }
-
-   this.student_Data = this.students_Name().find((d:any)=> d._id == res.student) as any;
-
-  })
+    this.paymentForm.controls.amount.disable({ onlySelf: true, emitEvent: false });
+    this.paymentForm.controls.student.valueChanges
+      .pipe(
+        distinctUntilChanged(),
+        switchMap((id) => (id ? this.appService.getOne_student(id).pipe(catchError(() => of(null))) : of(null)))
+      )
+      .subscribe((student: any) => {
+        this.student_Data = student;
+        this.subscriptionVal = student?.amount || 0;
+        if (student) this.paymentForm.controls.amount.enable({ onlySelf: true, emitEvent: false });
+        else this.paymentForm.controls.amount.disable({ onlySelf: true, emitEvent: false });
+      });
   }
   submit(data:FormGroup){
     if (data.valid&&data.controls?.['amount'].valid) {

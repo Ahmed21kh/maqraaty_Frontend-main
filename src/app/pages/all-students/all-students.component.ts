@@ -1,3 +1,7 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { STUDENT_EXPORT_COLUMNS } from '../../core/export/export-columns';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { ImportStudentsComponent } from '../../shared/components/import-students/import-students.component';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
@@ -29,7 +33,6 @@ import {
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ApiService } from '../../core/services/api.service';
-import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -94,6 +97,8 @@ interface ColumnItem {
   selector: 'app-all-students',
   standalone: true,
   imports: [
+    ExportMenuComponent,
+    ImportStudentsComponent,
     StudentAvatarComponent,
     StudentDetailsComponent,
     FilterBarComponent,
@@ -128,6 +133,15 @@ interface ColumnItem {
   styleUrl: './all-students.component.scss'
 })
 export class AllStudentsComponent implements OnInit {
+  /** Called by the export button: the table as it is shown right now. */
+  readonly exportSource = (): ExportOptions => ({
+    title: 'الطلاب المسجلين',
+    subtitle: `عرض ${this.listOfData.length} من اصل ${this.total ?? this.listOfData.length}`,
+    fileName: 'الطلاب المسجلين',
+    columns: STUDENT_EXPORT_COLUMNS,
+    rows: this.listOfData,
+  });
+
  isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -158,6 +172,15 @@ export class AllStudentsComponent implements OnInit {
       listOfFilter: [],
       filterFn: (list: string[], item: DataItem) =>
         list.some((name) => item.name.indexOf(name) !== -1),
+    },
+    {
+      name: 'تاريخ التسجيل',
+      sortOrder: null,
+      sortFn: (a: DataItem, b: DataItem) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sortDirections: ['ascend', 'descend', null],
+      filterMultiple: false,
+      listOfFilter: [],
+      filterFn: null,
     },
 
     {
@@ -243,7 +266,6 @@ export class AllStudentsComponent implements OnInit {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name = (this.appService.ensureAllNames(), this.appService.allStudentsName);
   student_Data!:DataItem ;
   showStudent:boolean = false;
   editingStudent = false;
@@ -339,11 +361,6 @@ export class AllStudentsComponent implements OnInit {
   closeShowStudent(){
   this.editingStudent = false;
     this.showStudent = false;
- }
- // O(1) id→name lookup (index rebuilt only when the students list instance changes)
- private readonly nameResolver = createNameResolver(() => this.students_Name());
- getNameOfOneStudent(id: string) {
-   return this.nameResolver(id);
  }
 
    handleSearchQuery(){
@@ -514,7 +531,6 @@ export class AllStudentsComponent implements OnInit {
         'max-height': '720px'
       },
       nzData: {
-        studentsName: this.students_Name,
         studentId: data?._id,
         studentData: data
       },

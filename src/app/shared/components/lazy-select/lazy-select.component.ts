@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, forwardRef, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BidiModule } from '@angular/cdk/bidi';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { NzSelectModule } from 'ng-zorro-antd/select';
 import { catchError, debounceTime, map, Observable, of, Subject, switchMap } from 'rxjs';
@@ -29,7 +30,7 @@ export type LazyFetch<T extends LazyOption = LazyOption> = (page: number, search
 @Component({
   selector: 'app-lazy-select',
   standalone: true,
-  imports: [FormsModule, NzSelectModule],
+  imports: [BidiModule, FormsModule, NzSelectModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'block w-full' },
   providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => LazySelectComponent), multi: true }],

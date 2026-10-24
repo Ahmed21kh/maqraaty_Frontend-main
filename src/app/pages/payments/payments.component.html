@@ -2,7 +2,7 @@
   <div>
     <app-page-header></app-page-header>
     <div class="registered_table" >
-      <div style="margin-block: 20px;display:flex;align-items: center;justify-content: space-between;gap: 20px;">
+<div style="margin-block: 20px;display:flex;align-items: center;justify-content: space-between;gap: 20px;">
         <nz-date-picker [nzSize]="'large'" [nzAllowClear]="false" [nzInputReadOnly]="true" [nzDefaultPickerValue]="defaultDate" [(ngModel)]="dateFilter" class=" w-1/5 md:!w-full !rounded-xl" (ngModelChange)="onChange($event)"></nz-date-picker>
 
        </div>
@@ -50,7 +50,12 @@
 
        </nz-card>
 
-      <nz-table
+<ng-template #tableToolbar>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+        <app-export-menu [source]="exportSource" />
+        </div>
+      </ng-template>
+      <nz-table [nzTitle]="tableToolbar"
         dir="rtl"
         [nzPageSize]="pageSize"
         #filterTable

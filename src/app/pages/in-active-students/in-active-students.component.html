@@ -7,7 +7,7 @@
       </div>
     </app-page-header>
     <div class="registered_table">
-      <app-filter-bar>
+<app-filter-bar>
         <nz-input-group
         [nzSize]="'large'"
           style="border-radius: 15px"
@@ -86,7 +86,12 @@
           {{total}}
         </div> -->
       </ng-template>
-      <nz-table
+<ng-template #tableToolbar>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+        <app-export-menu [source]="exportSource" />
+        </div>
+      </ng-template>
+      <nz-table [nzTitle]="tableToolbar"
 
         dir="rtl"
         [nzPageSize]="pageSize"
@@ -135,6 +140,7 @@
             >
               {{ data.name | empty }}
             </td>
+            <td class="whitespace-nowrap">{{ data.date ? (data.date | date: 'dd-MM-yyyy') : '----' }}</td>
             <td>{{ data.phone_1[0] | empty }}</td>
             <!-- <td>{{ data.phone_2[0] }}</td> -->
             <!-- <td>{{ data.landline | empty}}</td> -->

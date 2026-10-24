@@ -1,3 +1,7 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { PAYMENT_EXPORT_COLUMNS } from '../../core/export/export-columns';
+import { lastValueFrom } from 'rxjs';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -29,7 +33,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 /**
- * المصروفات المدفوعة — every payment recorded for a student, with totals for the filtered period.
+ * الاشتراكات المدفوعة — every payment recorded for a student, with totals for the filtered period.
  * Period = a month of a year (default: current month), the whole year, or a custom date range
  * (also accepted as `?from=YYYY-MM-DD&to=YYYY-MM-DD`, which is how the "not paid" page links here).
  */
@@ -37,6 +41,7 @@ const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
   selector: 'app-paid-expenses',
   standalone: true,
   imports: [
+    ExportMenuComponent,
     DatePipe,
     DecimalPipe,
     FormsModule,
@@ -60,6 +65,25 @@ const iso = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.ge
   styleUrl: './paid-expenses.component.scss',
 })
 export class PaidExpensesComponent {
+  /** Exports every payment of the current period / search (not just the visible page): pages of 200 until done. */
+  readonly exportSource = async (): Promise<ExportOptions> => {
+    const rows: PaidExpense[] = [];
+    let page = 1;
+    for (;;) {
+      const res = await lastValueFrom(this.api.getPaidExpenses(page, 200, this.queryString()));
+      rows.push(...res.data);
+      if (page >= res.metaData.totalPages || !res.data.length) break;
+      page++;
+    }
+    return {
+      title: 'الاشتراكات المدفوعة',
+      subtitle: `${this.periodLabel()} — الاجمالي ${rows.reduce((t, r) => t + (r.amount || 0), 0)} ج`,
+      fileName: `الاشتراكات المدفوعة ${this.periodLabel()}`,
+      columns: PAYMENT_EXPORT_COLUMNS,
+      rows,
+    };
+  };
+
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly message = inject(NzMessageService);
@@ -139,7 +163,7 @@ export class PaidExpensesComponent {
             catchError((err) => {
               this.loading.set(false);
               this.failed.set(true);
-              this.message.error(err?.error?.message || err?.message || 'تعذر تحميل المصروفات المدفوعة');
+              this.message.error(err?.error?.message || err?.message || 'تعذر تحميل الاشتراكات المدفوعة');
               return EMPTY;
             })
           )

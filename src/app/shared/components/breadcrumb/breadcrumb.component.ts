@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { NzIconModule } from 'ng-zorro-antd/icon';
@@ -24,7 +24,7 @@ const LABELS: Record<string, string> = {
   '/in-active-students': 'الطلاب غير النشطين',
   '/students-not-pay': 'اشتراكات لم تدفع',
   '/all-students': 'الطلاب المسجلين',
-  '/paid-expenses': 'المصروفات المدفوعة',
+  '/paid-expenses': 'الاشتراكات المدفوعة',
   '/settings': 'الاعدادات',
 };
 
@@ -82,12 +82,28 @@ export class BreadcrumbComponent {
     { initialValue: this.router.url }
   );
 
+  /** Names of students shown in the trail, fetched one at a time as pages need them. */
+  private readonly names = signal<Record<string, string>>({});
+  private readonly asked = new Set<string>();
+
   constructor() {
-    // a student's name in the trail may belong to an inactive student, so load the full lookup only then
-    effect(() => {
-      const segments = this.url().split('?')[0].split('/').filter(Boolean);
-      if (segments.some((_, i) => !LABELS[`/${segments.slice(0, i + 1).join('/')}`])) this.api.ensureAllNames();
-    });
+    effect(
+      () => {
+        const segments = this.url().split('?')[0].split('/').filter(Boolean);
+        segments.forEach((id, i) => {
+          if (LABELS[`/${segments.slice(0, i + 1).join('/')}`] || this.asked.has(id) || !/^[a-f\d]{24}$/i.test(id)) return;
+          this.asked.add(id);
+          this.api.getStudentOptions({ ids: [id] }).subscribe({
+            next: (res) => {
+              const name = res.data[0]?.name?.trim();
+              if (name) this.names.update((n) => ({ ...n, [id]: name }));
+            },
+            error: () => this.asked.delete(id),
+          });
+        });
+      },
+      { allowSignalWrites: true }
+    );
   }
 
   readonly crumbs = computed<Crumb[]>(() => {
@@ -105,6 +121,6 @@ export class BreadcrumbComponent {
 
   /** Dynamic segments (`:id`) show the student's name when it is known, else the raw id. */
   private studentName(id: string): string {
-    return this.api.allStudentsName().find((s) => s._id === id)?.name ?? id;
+    return this.names()[id] ?? id;
   }
 }

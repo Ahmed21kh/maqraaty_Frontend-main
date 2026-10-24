@@ -1,6 +1,7 @@
 import { Component, DestroyRef, HostListener, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SettingsService } from '../../../theme/settings.service';
+import { TableScrollService } from '../../core/services/table-scroll.service';
 import { WhatsappSocketService } from '../../core/whatsapp/whatsapp-socket.service';
 import { HeaderActionsComponent } from '../header/header-actions.component';
 import { HeaderComponent } from '../header/header.component';
@@ -124,6 +125,7 @@ export class ShellComponent implements OnInit {
   protected readonly settings = inject(SettingsService);
   private readonly whatsapp = inject(WhatsappSocketService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly tableScroll = inject(TableScrollService);
 
   /** The sidebar is fixed, so the content keeps clear of it: its width plus the 12px gap on each side. */
   protected sidebarOffset(): string {
@@ -140,6 +142,7 @@ export class ShellComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.tableScroll.start();
     this.whatsapp.connect();
     this.watchBreakpoints();
   }

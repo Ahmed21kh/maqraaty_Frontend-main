@@ -20,7 +20,7 @@ export const routes: Routes = [
   { path: 'reports', data: { title: 'التقارير بالمقرأة' }, loadChildren: () => import('./pages/reports/reports.routes').then(m => m.REPORTS_ROUTES) },
   { path: 'in-active-students', data: { title: 'الطلاب غير النشطين' }, loadChildren: () => import('./pages/in-active-students/in-active-students.routes').then(m => m.IN_Active_Students_ROUTES) },
   { path: 'students-not-pay', data: { title: 'اشتراكات لم تدفع' }, loadChildren: () => import('./pages/students-not-pay/students-not-pay.routes').then(m => m.STUDENTS_NOT_PAY_ROUTES) },
-  { path: 'paid-expenses', data: { title: 'المصروفات المدفوعة' }, loadChildren: () => import('./pages/paid-expenses/paid-expenses.routes').then(m => m.PAID_EXPENSES_ROUTES) },
+  { path: 'paid-expenses', data: { title: 'الاشتراكات المدفوعة' }, loadChildren: () => import('./pages/paid-expenses/paid-expenses.routes').then(m => m.PAID_EXPENSES_ROUTES) },
   { path: 'settings', data: { title: 'الاعدادات' }, loadChildren: () => import('./pages/settings/settings.routes').then(m => m.SETTINGS_ROUTES) },
   { path: '**', redirectTo: 'home' },
 ];

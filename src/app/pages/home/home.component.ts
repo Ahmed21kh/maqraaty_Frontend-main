@@ -1,14 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { NzAutocompleteModule } from 'ng-zorro-antd/auto-complete';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzInputModule } from 'ng-zorro-antd/input';
-import { debounceTime, Subject } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../core/services/api.service';
-import { toStudentViews } from '../../core/utils/student.mapper';
-import { normalizeArabic } from '../../core/utils/text.util';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 
 const MAX_RESULTS = 8;
@@ -39,27 +37,29 @@ export class HomeComponent {
   ];
 
   protected readonly inputValue = signal('');
-  private readonly query = signal('');
   private readonly typed$ = new Subject<string>();
 
-  /** View-models are built once per students list (memoised per student), not on every keystroke. */
-  private readonly students = computed(() => toStudentViews(this.api.activeStudentsName()));
-
-  protected readonly options = computed(() => {
-    const q = normalizeArabic(this.query());
-    if (!q) return [];
-    return this.students()
-      .filter((s) => s.searchKey.includes(q))
-      .slice(0, MAX_RESULTS);
-  });
+  /** The first page of matches from the server (name, code or phone): no students list is kept in the browser. */
+  protected readonly options = signal<{ id: string; name: string; imagePath: string | null }[]>([]);
 
   constructor() {
-    this.api.ensureActiveNames();
-    this.typed$.pipe(debounceTime(250), takeUntilDestroyed()).subscribe((value) => this.query.set(value));
+    this.typed$
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        // a slower, older answer can never replace a newer one
+        switchMap((q) =>
+          q
+            ? this.api.getStudentOptions({ search: q, status: 'active', limit: MAX_RESULTS }).pipe(catchError(() => of({ data: [] as any[] })))
+            : of({ data: [] as any[] })
+        ),
+        takeUntilDestroyed()
+      )
+      .subscribe((res) => this.options.set(res.data.map((s) => ({ id: s._id, name: s.name?.trim() || '--', imagePath: s.image || null }))));
   }
 
   protected onInput(value: string): void {
     this.inputValue.set(value);
-    this.typed$.next(value);
+    this.typed$.next(value.trim());
   }
 }

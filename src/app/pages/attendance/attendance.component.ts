@@ -1,3 +1,7 @@
+import { BidiModule } from '@angular/cdk/bidi';
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { dateOf, first } from '../../core/export/export-columns';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
@@ -101,6 +105,8 @@ interface ColumnItem {
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
   imports: [
+    BidiModule,
+    ExportMenuComponent,
     StatCardComponent,
     StudentAvatarComponent,
     StudentDetailsComponent,
@@ -138,6 +144,20 @@ interface ColumnItem {
   ],
 })
 export class AttendanceComponent implements OnInit {
+  readonly exportSource = (): ExportOptions => ({
+    title: 'الحضور بالمقرأة',
+    subtitle: `${dateOf(this.dateAttendance)} — الحضور ${this.attendanceDetails?.totalAttend || 0} / الغياب ${this.attendanceDetails?.totalAbsent || 0}`,
+    fileName: `الحضور ${dateOf(this.dateAttendance)}`,
+    columns: [
+      { header: 'الكود', value: (r) => r.studentDetails?.code, width: 9 },
+      { header: 'الاسم', value: (r) => r.studentDetails?.name, width: 30 },
+      { header: 'رقم الهاتف', value: (r) => first(r.studentDetails?.phone_1), width: 16 },
+      { header: 'التاريخ', value: () => dateOf(this.dateAttendance), width: 14 },
+      { header: 'حالة الحضور', value: (r) => (r.status === 'حاضر' || r.status === 'غائب' ? r.status : 'لم يسجل'), width: 14 },
+    ],
+    rows: this.listOfData,
+  });
+
   isVisible = false;
   isEdit = false;
   searchName: string = '';
@@ -222,7 +242,6 @@ export class AttendanceComponent implements OnInit {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name = (this.appService.ensureActiveNames(), this.appService.activeStudentsName);
   student_Data!: StudentItem;
   showStudent: boolean = false;
   editingStudent = false;
@@ -504,15 +523,7 @@ export class AttendanceComponent implements OnInit {
     this.showStudent = false;
   }
 
-  studentName(id: string) {
-    let student = this.students_Name().find(data => data._id == id)?.name
-    return student;
-  }
 
-  getNameOfOneStudent(id: string) {
-    let student = this.students_Name().find(data => data._id == id)?.name
-    return student;
-  }
 
   resetData() {
     this.paymentForm.reset({

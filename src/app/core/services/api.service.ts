@@ -1,13 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { inject, Injectable, signal } from '@angular/core';
-import { catchError, Observable, shareReplay, tap, throwError } from 'rxjs';
-import { Student_Names } from '../models/app.model';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AttendanceScope, AttendanceStats } from '../models/attendance-stats.model';
 import { PaidExpensesMonthly, PaidExpensesResponse } from '../models/paid-expenses.model';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { API_URL } from '../config/api.config';
 
-type NamesStatus = 'active' | 'all';
 
 /**
  * Single gateway to the REST backend.
@@ -15,8 +13,8 @@ type NamesStatus = 'active' | 'all';
  * Endpoints, query strings and payloads are unchanged. What differs from the
  * previous version:
  *  - the (meaningless, preflight-triggering) request `Cache-Control` headers are gone;
- *  - the students-name lookups are fetched once, shared between callers and
- *    refreshed automatically after any student mutation.
+ *  - no full students list is downloaded any more: pickers, search and name look-ups use the paginated
+ *    `getStudentOptions` endpoint, a page (or a single student) at a time.
  */
 @Injectable({
   providedIn: 'root',
@@ -26,28 +24,7 @@ export class ApiService {
   private readonly message = inject(NzMessageService);
 
   readonly url: string = inject(API_URL);
-  allStudentsName = signal<Student_Names[]>([]);
-  activeStudentsName = signal<Student_Names[]>([]);
 
-  private readonly namesCache = new Map<NamesStatus, Observable<Student_Names[]>>();
-
-  // Nothing is fetched at start-up: each lookup loads the first time a page asks for it.
-  private activeNamesRequested = false;
-  private allNamesRequested = false;
-
-  /** Loads the active-students lookup the first time something needs it. */
-  ensureActiveNames(): void {
-    if (this.activeNamesRequested) return;
-    this.activeNamesRequested = true;
-    this.getACtiveStudentsName();
-  }
-
-  /** Loads the full (active + inactive) lookup the first time something needs it. */
-  ensureAllNames(): void {
-    if (this.allNamesRequested) return;
-    this.allNamesRequested = true;
-    this.getAllStudentsName();
-  }
 
   // ---------------------------------------------------------------- helpers
 
@@ -85,57 +62,11 @@ export class ApiService {
     return allDates;
   }
 
-  // ---------------------------------------------------- students-name lookups
-
-  /** Re-fetches the active-students lookup and publishes it on `activeStudentsName`. */
-  getACtiveStudentsName() {
-    this.namesCache.delete('active');
-    this.getStudents_names('active').subscribe({
-      next: (res) => this.activeStudentsName.set(res),
-      error: (err) => this.message.error(err.message),
-    });
-  }
-
-  /** Re-fetches the full students lookup and publishes it on `allStudentsName`. */
-  getAllStudentsName() {
-    this.namesCache.delete('all');
-    this.getStudents_names().subscribe({
-      next: (res) => this.allStudentsName.set(res),
-      error: (err) => this.message.error(err.message),
-    });
-  }
-
-  /** Drops cached lookups and reloads them. Called after every student mutation. */
-  private refreshNames = <T>() =>
-    tap<T>(() => {
-      if (this.allNamesRequested) this.getAllStudentsName();
-      if (this.activeNamesRequested) this.getACtiveStudentsName();
-    });
-
-  /** Students lookup — shared + cached until a mutation invalidates it. */
-  getStudents_names(status: string | null = null): Observable<Student_Names[]> {
-    const key: NamesStatus = status === 'active' ? 'active' : 'all';
-    let request$ = this.namesCache.get(key);
-    if (!request$) {
-      const api = status ? `students_name?active_status=${status}` : 'students_name';
-      const source$ = this.http.get<Student_Names[]>(this.url + api);
-      request$ = source$.pipe(
-        catchError((err) => {
-          this.namesCache.delete(key); // don't cache failures
-          return throwError(() => err);
-        }),
-        shareReplay({ bufferSize: 1, refCount: false })
-      );
-      this.namesCache.set(key, request$);
-    }
-    return request$;
-  }
-
   /**
    * One page of students for a dropdown (`GET /students_options`): `search` matches name or code,
    * `status` is active | in_active | '' (everyone), `exclude` leaves ids out and `ids` fetches just those students.
    */
-  getStudentOptions(opts: { page?: number; limit?: number; search?: string; status?: string; exclude?: string[]; ids?: string[] }): Observable<{ data: { _id: string; name: string; code: number }[]; total: number; hasMore: boolean }> {
+  getStudentOptions(opts: { page?: number; limit?: number; search?: string; status?: string; exclude?: string[]; ids?: string[] }): Observable<{ data: { _id: string; name: string; code: number; image?: string }[]; total: number; hasMore: boolean }> {
     let params = new HttpParams();
     if (opts.ids?.length) {
       params = params.set('ids', opts.ids.join(','));
@@ -182,17 +113,17 @@ export class ApiService {
 
   //add student
   addStudent(data: any): Observable<any> {
-    return this.http.post(this.url + 'add_student', data).pipe(this.refreshNames());
+    return this.http.post(this.url + 'add_student', data);
   }
 
   //update student
   updateStudent(id: string, data: any): Observable<any> {
-    return this.http.put(this.url + `update_student?id=${id}`, data).pipe(this.refreshNames());
+    return this.http.put(this.url + `update_student?id=${id}`, data);
   }
 
   //delete student
   delete_student(id: string): Observable<any> {
-    return this.http.delete(this.url + `delete_student?id=${id}`).pipe(this.refreshNames());
+    return this.http.delete(this.url + `delete_student?id=${id}`);
   }
 
   //activate / deactivate a student
@@ -202,7 +133,7 @@ export class ApiService {
         activeStatus: status,
         student: id,
       })
-      .pipe(this.refreshNames());
+      ;
   }
 
   //activate student
@@ -213,12 +144,12 @@ export class ApiService {
         student: id,
         activatedDate: date,
       })
-      .pipe(this.refreshNames());
+      ;
   }
 
   // activate and deactivate students
   activate_deactivate_students(data: any): Observable<any> {
-    return this.http.post(this.url + `activate-or-deactivate`, data).pipe(this.refreshNames());
+    return this.http.post(this.url + `activate-or-deactivate`, data);
   }
 
   //search students data

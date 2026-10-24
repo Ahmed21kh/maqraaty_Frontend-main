@@ -1,3 +1,4 @@
+import { BidiModule } from '@angular/cdk/bidi';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NzButtonModule } from 'ng-zorro-antd/button';
@@ -22,6 +23,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
   selector: 'app-settings',
   standalone: true,
   imports: [
+    BidiModule,
     FormsModule,
     NzButtonModule,
     NzIconModule,

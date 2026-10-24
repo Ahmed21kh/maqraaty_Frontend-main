@@ -1,3 +1,7 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { STUDENT_EXPORT_COLUMNS } from '../../core/export/export-columns';
+import { ExportOptions } from '../../core/services/table-export.service';
+import { ImportStudentsComponent } from '../../shared/components/import-students/import-students.component';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
@@ -32,7 +36,6 @@ import {
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ApiService } from '../../core/services/api.service';
-import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -98,6 +101,8 @@ interface ColumnItem {
     templateUrl: './registered-students.component.html',
     styleUrl: './registered-students.component.scss',
     imports: [
+    ExportMenuComponent,
+    ImportStudentsComponent,
     StudentAvatarComponent,
     StudentDetailsComponent,
     StudentSelectComponent,
@@ -132,6 +137,15 @@ interface ColumnItem {
     ]
 })
 export class RegisteredStudentsComponent implements OnInit {
+  /** Called by the export button: the table as it is shown right now. */
+  readonly exportSource = (): ExportOptions => ({
+    title: 'الطلاب النشطين',
+    subtitle: `عرض ${this.listOfData.length} من اصل ${this.total ?? this.listOfData.length}`,
+    fileName: 'الطلاب النشطين',
+    columns: STUDENT_EXPORT_COLUMNS,
+    rows: this.listOfData,
+  });
+
   isVisible = false;
   isEdit = false;
   searchName:string ='';
@@ -161,6 +175,15 @@ export class RegisteredStudentsComponent implements OnInit {
       listOfFilter: [],
       filterFn: (list: string[], item: DataItem) =>
         list.some((name) => item.name.indexOf(name) !== -1),
+    },
+    {
+      name: 'تاريخ التسجيل',
+      sortOrder: null,
+      sortFn: (a: DataItem, b: DataItem) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sortDirections: ['ascend', 'descend', null],
+      filterMultiple: false,
+      listOfFilter: [],
+      filterFn: null,
     },
 
     {
@@ -237,7 +260,6 @@ export class RegisteredStudentsComponent implements OnInit {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
   student_Data!:DataItem ;
   showStudent:boolean = false;
   editingStudent = false;
@@ -332,11 +354,6 @@ export class RegisteredStudentsComponent implements OnInit {
   this.editingStudent = false;
     this.showStudent = false;
  }
- // O(1) id→name lookup (index rebuilt only when the students list instance changes)
- private readonly nameResolver = createNameResolver(() => this.students_Name);
- getNameOfOneStudent(id: string) {
-   return this.nameResolver(id);
- }
 
   handleAdd(title:string) {
     const formControl = new FormControl('',[Validators.min(11),Validators.pattern(/^\d{11}$/)])
@@ -428,16 +445,6 @@ export class RegisteredStudentsComponent implements OnInit {
     });
   }
 
-  async getStudentsName(){
-    this.appService.getStudents_names("active").subscribe({
-      next:async(data)=>{
-        this.students_Name = await data;
-      },
-      error:(err)=>{
-        this.msg.error(err.message)
-      }
-    })
-  }
 
   async getOneUser(Id:string){
     this.appService.getOne_student(Id).subscribe({
@@ -452,7 +459,6 @@ export class RegisteredStudentsComponent implements OnInit {
 
   ngOnInit(): void {
     this.getDataOfStudents();
-    this.getStudentsName()
   }
   changePagination (e:any) {
   this.pageNumber = e

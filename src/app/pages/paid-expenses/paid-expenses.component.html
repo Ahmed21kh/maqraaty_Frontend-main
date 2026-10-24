@@ -18,7 +18,7 @@
 <!-- ------------------------------------------------------------------ totals for the filtered period -->
 <div class="mb-5 grid grid-cols-1 gap-4 tablet:grid-cols-2 desk:grid-cols-4">
   <app-stat-card
-    label="اجمالي المصروفات المدفوعة"
+    label="اجمالي الاشتراكات المدفوعة"
     icon="dollar"
     tone="success"
     suffix="ج"
@@ -83,8 +83,11 @@
 
 <!-- ------------------------------------------------------------------ ledger -->
 <app-section-card title="سجل المدفوعات" [subtitle]="(total() | number) + ' عملية دفع'" [padded]="false">
-  <div actions class="w-[420px] max-w-full">
-    <app-search-bar placeholder="ابحث بالاسم او الكود او رقم الهاتف" size="large" [loading]="loading()" (search)="onSearch($event)" />
+  <div actions class="flex flex-wrap items-center gap-2">
+    <div class="w-[420px] max-w-full">
+      <app-search-bar placeholder="ابحث بالاسم او الكود او رقم الهاتف" size="large" [loading]="loading()" (search)="onSearch($event)" />
+    </div>
+    <app-export-menu [source]="exportSource" />
   </div>
 
   @if (failed()) {

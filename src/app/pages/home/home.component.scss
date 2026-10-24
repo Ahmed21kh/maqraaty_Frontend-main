@@ -17,6 +17,7 @@
 }
 
 .quick-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -27,11 +28,47 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.25s, border-color 0.25s;
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.24);
+  // Gradient ring (primary → secondary) drawn only as a border via a mask; hidden until hover,
+  // then it fades in and its colours slide around the pill.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--app-primary), var(--app-secondary), var(--app-primary));
+    background-size: 200% 100%; // one tile = primary → secondary → primary, so a 200% shift loops with no jump
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: transparent;
     transform: translateY(-2px);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--app-primary) 38%, transparent), 0 0 0 3px color-mix(in srgb, var(--app-secondary) 18%, transparent);
+    outline: none;
+
+    &::before {
+      opacity: 1;
+      animation: ring-slide 2.4s linear infinite; // never stops while hovered
+    }
+  }
+}
+
+@keyframes ring-slide {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 200% 0;
   }
 }
 
@@ -113,4 +150,43 @@
 .home > div {
   padding-right: calc(1rem + var(--hero-pad-r, 0px));
   padding-left: calc(1rem + var(--hero-pad-l, 0px));
+}
+
+// Same animated primary → secondary ring as the shortcut buttons, on hover and while typing.
+.home-search ::ng-deep .ant-input-affix-wrapper {
+  position: relative;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+
+  &::before {
+    // antd gives the affix wrapper its own zero-width, hidden ::before strut: take it over completely
+    content: '';
+    display: block;
+    visibility: visible;
+    width: auto;
+    height: auto;
+    position: absolute;
+    inset: -1px;
+    padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--app-primary), var(--app-secondary), var(--app-primary));
+    background-size: 200% 100%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  &:hover,
+  &:focus-within,
+  &.ant-input-affix-wrapper-focused {
+    border-color: transparent;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--app-primary) 36%, transparent), 0 0 0 3px color-mix(in srgb, var(--app-secondary) 16%, transparent);
+
+    &::before {
+      opacity: 1;
+      animation: ring-slide 2.4s linear infinite;
+    }
+  }
 }

@@ -952,3 +952,59 @@ html body .filter-drawer {
     min-width: 160px;
   }
 }
+
+
+/* ───────── table action column (last column with an empty header: edit / delete / info) ─────────
+   Icons become tidy rounded buttons that tint on hover, and the column stays pinned to the edge
+   while a wide table scrolls sideways. */
+html body main .ant-table-wrapper:has(thead tr > th:last-child:empty) {
+  .ant-table-tbody > tr > td:last-child > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px;
+  }
+
+  .ant-table-tbody > tr > td:last-child .anticon {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    font-size: 16px !important;
+    border-radius: 10px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .ant-table-tbody > tr > td:last-child .anticon:hover {
+    background: color-mix(in srgb, currentColor 24%, transparent);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px color-mix(in srgb, currentColor 22%, transparent);
+  }
+
+  /* pinned to the left edge (the table is right-to-left, so the action column is the leftmost) */
+  .ant-table-thead > tr > th:last-child,
+  .ant-table-tbody > tr > td:last-child {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    min-width: 108px;
+    background: var(--app-surface);
+  }
+  .ant-table-thead > tr > th:last-child {
+    background: var(--app-surface-2, var(--app-surface));
+  }
+  .ant-table-tbody > tr:hover > td:last-child {
+    background: var(--app-surface-2, var(--app-surface));
+  }
+}
+
+@media (max-width: 1280px) {
+  /* the pinned column casts a shadow only while the table still scrolls beyond it (`scroll-end` is set by TableScrollService) */
+  html body main .ant-table-wrapper:has(thead tr > th:last-child:empty) .ant-table-content:not(.scroll-end) {
+    .ant-table-thead > tr > th:last-child,
+    .ant-table-tbody > tr > td:last-child {
+      box-shadow: 8px 0 10px -8px rgba(0, 0, 0, 0.45);
+    }
+  }
+}

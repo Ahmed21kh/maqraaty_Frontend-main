@@ -74,9 +74,6 @@ export class EditStudentsModalComponent implements OnInit, OnDestroy {
   loadingAdd: boolean = false;
   loadingAEdit: boolean = false;
   url: string = environment.apiUrl
-  studentsName = (this.appService.ensureAllNames(), this.appService.allStudentsName);
-  studentsNameOptions = signal<Student_Names[]>([]);
-  selectedStudents = signal<Student_Names[]>([]);
   studentId:string = '';
   readonly #modal = inject(NzModalRef, { optional: true });
   readonly serv = inject(ApiService);
@@ -194,17 +191,6 @@ export class EditStudentsModalComponent implements OnInit, OnDestroy {
     const relativeIds: string[] = (data.relative || [])
       .map((r: any) => (typeof r === 'string' ? r : r?._id))
       .filter((id: any) => !!id);
-    const selectedIds = new Set(
-      this.arr_relative.value.filter((id: string) => id && id !== '')
-    );
-    const students = this.studentsName().filter(
-      (s): s is Student_Names =>
-        s._id != null &&
-        s._id !== this.studentId
-    );
-    this.selectedStudents.set([...students.filter(s=>!selectedIds.has(s._id))])
-    this.studentsNameOptions.set([...students]);
-
 
     this.#rebuildArray('phone_1', data.phone_1);
     this.#rebuildArray('phone_2', data.phone_2);
@@ -228,22 +214,6 @@ export class EditStudentsModalComponent implements OnInit, OnDestroy {
       notes: data.notes,
       date: data.date,
       amount: data.amount,
-    });
-
-    this.myForm.get('relative')!.valueChanges.pipe(
-      takeUntil(this.destroy$),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-    ).subscribe((relativeIds) => {
-      const selectedIds = new Set(relativeIds.filter(id => id && id !== ''));
-
-      const newArr = this.studentsName().filter(
-        (s): s is Student_Names =>
-          s._id != null &&
-          s._id !== this.studentId
-      );
-      this.selectedStudents.set([...students.filter(s=>!selectedIds.has(s._id))])
-
-      this.studentsNameOptions.set(newArr);
     });
   }
 
@@ -369,14 +339,6 @@ export class EditStudentsModalComponent implements OnInit, OnDestroy {
     }else if (title == "phone_3") {
       this.arr_phone_3.push(formControl)
     }else if (title == "relative") {
-     // ── Only exclude non-empty selected IDs ──
-
-  const newArr = this.studentsName().filter(
-    (s): s is Student_Names =>
-      s._id != null &&
-      s._id !== this.studentId
-  );
-  this.studentsNameOptions.set(newArr);
   this.arr_relative.push(formControl2);
     }
   }
@@ -442,10 +404,6 @@ export class EditStudentsModalComponent implements OnInit, OnDestroy {
     } else {
       this.validate()
     }
-  }
-
-  disabledOption(item:any):boolean {
-     return this.arr_relative.value?.includes(item?._id)
   }
 
   destroyModal(data?: any): void {

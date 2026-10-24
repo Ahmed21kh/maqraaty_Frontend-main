@@ -1,3 +1,6 @@
+import { ExportMenuComponent } from '../../shared/components/export-menu/export-menu.component';
+import { STUDENT_EXPORT_COLUMNS } from '../../core/export/export-columns';
+import { ExportOptions } from '../../core/services/table-export.service';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
@@ -31,7 +34,6 @@ import {
 import { NzUploadChangeParam, NzUploadModule } from 'ng-zorro-antd/upload';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { ApiService } from '../../core/services/api.service';
-import { createNameResolver } from '../../core/utils/student-lookup';
 import Swal from 'sweetalert2';
 import { NzImageModule } from 'ng-zorro-antd/image';
 import { map } from 'rxjs';
@@ -104,6 +106,7 @@ interface ColumnItem {
   host: { ngSkipHydration: 'true' },
   standalone: true,
   imports: [
+    ExportMenuComponent,
     StudentAvatarComponent,
     StudentDetailsComponent,
     MonthCarouselComponent,
@@ -142,6 +145,15 @@ interface ColumnItem {
   providers: [NzModalService]
 })
 export class StudentsNotPayComponent implements OnInit {
+  /** Called by the export button: the table as it is shown right now. */
+  readonly exportSource = (): ExportOptions => ({
+    title: 'اشتراكات لم تدفع',
+    subtitle: `شهر ${this.activeMonth} / ${this.currentYear} — عرض ${this.listOfData.length} طالب`,
+    fileName: 'اشتراكات لم تدفع',
+    columns: STUDENT_EXPORT_COLUMNS,
+    rows: this.listOfData,
+  });
+
   isVisible = false;
   isEdit = false;
   searchName: string = '';
@@ -176,6 +188,15 @@ export class StudentsNotPayComponent implements OnInit {
       listOfFilter: [],
       filterFn: (list: string[], item: DataItem) =>
         list.some((name) => item.name.indexOf(name) !== -1),
+    },
+    {
+      name: 'تاريخ التسجيل',
+      sortOrder: null,
+      sortFn: (a: DataItem, b: DataItem) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      sortDirections: ['ascend', 'descend', null],
+      filterMultiple: false,
+      listOfFilter: [],
+      filterFn: null,
     },
 
     {
@@ -261,7 +282,6 @@ export class StudentsNotPayComponent implements OnInit {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
   student_Data!: DataItem;
   showStudent: boolean = false;
   editingStudent = false;
@@ -415,11 +435,6 @@ export class StudentsNotPayComponent implements OnInit {
   closeShowStudent() {
     this.editingStudent = false;
     this.showStudent = false;
-  }
-  // O(1) id→name lookup (index rebuilt only when the students list instance changes)
-  private readonly nameResolver = createNameResolver(() => this.students_Name);
-  getNameOfOneStudent(id: string) {
-    return this.nameResolver(id);
   }
 
   handleAdd(title: string) {
@@ -594,16 +609,6 @@ export class StudentsNotPayComponent implements OnInit {
       .split('T')[0];
     this.handleSearchQuery();
   }
-  async getStudentsName() {
-    this.appService.getStudents_names("active").subscribe({
-      next: async (data) => {
-        this.students_Name = await data;
-      },
-      error: (err) => {
-        this.msg.error(err.message);
-      },
-    });
-  }
 
   async getOneUser(Id: string) {
     this.appService.getOne_student(Id).subscribe({
@@ -618,8 +623,7 @@ export class StudentsNotPayComponent implements OnInit {
 
   ngOnInit(): void {
     this.getDataOfStudents();
-    // this.getStudentsName()
-    this.date = [this.startDate, this.endDate];
+    //    this.date = [this.startDate, this.endDate];
   }
 
   onChange(result: Date[]): void {

@@ -52,7 +52,7 @@
   <app-section-card title="الخط والشكل" subtitle="حجم الخط والزوايا والكثافة">
     <div class="setting-row">
       <div class="setting-label">نوع الخط</div>
-      <nz-select class="w-[220px]" [ngModel]="s().fontFamily" (ngModelChange)="set('fontFamily', $event)" [nzDropdownStyle]="{ direction: 'rtl' }">
+      <nz-select dir="rtl" class="w-[220px]" [ngModel]="s().fontFamily" (ngModelChange)="set('fontFamily', $event)" [nzDropdownStyle]="{ direction: 'rtl' }">
         @for (f of fonts; track f.key) {
           <nz-option [nzValue]="f.key" [nzLabel]="f.label"></nz-option>
         }
@@ -126,7 +126,7 @@
       </div>
       <div class="flex flex-wrap items-center gap-3">
         <input nz-input class="max-w-[240px]" placeholder="مربع ادخال" />
-        <nz-select class="w-[200px]" nzPlaceHolder="اختر طالب" [nzDropdownStyle]="{ direction: 'rtl' }">
+        <nz-select dir="rtl" class="w-[200px]" nzPlaceHolder="اختر طالب" [nzDropdownStyle]="{ direction: 'rtl' }">
           @for (o of previewOptions; track o) {
             <nz-option [nzValue]="o" [nzLabel]="o"></nz-option>
           }

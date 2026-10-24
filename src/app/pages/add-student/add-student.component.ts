@@ -216,7 +216,6 @@ export class AddStudentComponent {
   loadingAEdit: boolean = false;
   loadingSearch: boolean = false;
   loadingData: boolean = false;
-  students_Name: Student_Names[] = [];
   student_Data!:DataItem ;
   showStudent:boolean = false;
   nameContent!:string;
@@ -283,10 +282,6 @@ export class AddStudentComponent {
  }
  closeShowStudent(){
   this.showStudent = false;
- }
- getNameOfOneStudent(id:string){
-  let student = this.students_Name.filter(data => data._id == id)[0].name;
-  return student
  }
 
   handleAdd(title:string) {
@@ -399,16 +394,6 @@ export class AddStudentComponent {
     }else
     return false ;
   }
-  async getStudentsName(){
-    this.appService.getStudents_names().subscribe({
-      next:async(data)=>{
-        this.students_Name = await data;
-      },
-      error:(err)=>{
-        this.msg.error(err.message)
-      }
-    })
-  }
 
   async getOneUser(Id:string){
     this.appService.getOne_student(Id).subscribe({
@@ -423,7 +408,6 @@ export class AddStudentComponent {
 
   ngOnInit(): void {
     this.getDataOfStudents();
-    this.getStudentsName()
   }
   changePagination (e:any) {
   this.pageNumber = e

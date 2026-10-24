@@ -30,10 +30,10 @@ import { WhatsappButtonComponent } from '../whatsapp/whatsapp-button.component';
       >
         <ng-icon [name]="theme.isDark() ? 'heroSunSolid' : 'heroMoonSolid'" />
       </button>
-      <button type="button" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-app border border-app-border bg-app-surface text-base text-app-text shadow-app transition-shadow hover:shadow-app-hover disabled:cursor-wait disabled:opacity-60" nz-tooltip nzTooltipTitle="رجوع" aria-label="رجوع" (click)="back()">
+      <button type="button" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-app border border-app-border bg-app-surface text-base text-app-text shadow-app transition-all duration-200 hover:border-app-primary hover:text-app-primary hover:shadow-app-hover disabled:cursor-wait disabled:opacity-60" nz-tooltip nzTooltipTitle="رجوع" aria-label="رجوع" (click)="back()">
         <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
       </button>
-      <button type="button" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-app border border-app-border bg-app-surface text-base text-app-text shadow-app transition-shadow hover:shadow-app-hover disabled:cursor-wait disabled:opacity-60" nz-tooltip nzTooltipTitle="تحديث الصفحة" aria-label="تحديث الصفحة" (click)="refresh()">
+      <button type="button" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-app border border-app-border bg-app-surface text-base text-app-text shadow-app transition-all duration-200 hover:border-app-primary hover:text-app-primary hover:shadow-app-hover disabled:cursor-wait disabled:opacity-60" nz-tooltip nzTooltipTitle="تحديث الصفحة" aria-label="تحديث الصفحة" (click)="refresh()">
         <span nz-icon nzType="reload" nzTheme="outline"></span>
       </button>
     </div>

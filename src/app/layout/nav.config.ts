@@ -23,8 +23,8 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'الحضور بالمقرأة', icon: 'audit', route: '/attendance' },
   { label: 'الاشتراكات بالمقرأة', icon: 'credit-card', route: '/student-subscription' },
   { label: 'اشتراكات لم تدفع', icon: 'strikethrough', route: '/students-not-pay' },
-  { label: 'المصروفات المدفوعة', icon: 'account-book', route: '/paid-expenses' },
   { label: 'التقارير بالمقرأة', icon: 'pie-chart', route: '/reports' },
+  { label: 'الاشتراكات المدفوعة', icon: 'account-book', route: '/paid-expenses' },
   { label: 'الاعدادات', icon: 'setting', route: '/settings' },
 ];
 

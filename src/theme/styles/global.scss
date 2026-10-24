@@ -60,9 +60,10 @@ img {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  // `.keep-motion` opts a gentle decorative loop (the home shortcuts' hover ring) out of the OS-level cut
+  *:not(.keep-motion),
+  *:not(.keep-motion)::before,
+  *:not(.keep-motion)::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important; // an infinite 0.01ms loop would flicker
     transition-duration: 0.01ms !important;
