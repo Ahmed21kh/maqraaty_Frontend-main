@@ -1,3 +1,4 @@
+import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { Tone } from '../../../theme/tokens';
@@ -91,6 +92,7 @@ interface ColumnItem {
     templateUrl: './student-payment-details.component.html',
     styleUrl: './student-payment-details.component.scss',
     imports: [
+    StudentAvatarComponent,
     StudentSelectComponent,
       StatusBadgeComponent,
     ImageOnlyUploadDirective,

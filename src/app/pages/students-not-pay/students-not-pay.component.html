@@ -106,7 +106,7 @@
               <img nz-image loading="lazy" width="70" height="70" style="margin: auto" [nzSrc]="url + '' + data.image"
                 alt="img" class="cursor-pointer" />
               }@else {
-              <img loading="lazy" width="70" height="70" style="margin: auto" [src]="'assets/user.png'" alt="img" />
+              <div style="display: flex; justify-content: center"><app-student-avatar [name]="data.name" [size]="70" /></div>
               }
             </td>
             <td>

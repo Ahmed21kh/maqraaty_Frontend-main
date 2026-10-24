@@ -1,3 +1,4 @@
+import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
@@ -99,6 +100,7 @@ interface ColumnItem {
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
   imports: [
+    StudentAvatarComponent,
     StudentDetailsComponent,
     MonthCarouselComponent,
     FilterBarComponent,

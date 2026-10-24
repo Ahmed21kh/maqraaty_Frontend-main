@@ -926,3 +926,29 @@ html body .filter-drawer {
     background: var(--app-surface);
   }
 }
+
+/* data tables on narrow screens: keep readable column widths and scroll sideways instead of squeezing / clipping
+   (the action buttons used to be cut off at the edge). RTL: scrolling starts at the first column. */
+@media (max-width: 1280px) {
+  html body main .ant-table-wrapper .ant-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  html body main .ant-table-wrapper .ant-table-content,
+  html body main .ant-table-wrapper .ant-table-body {
+    overflow-x: auto !important;
+  }
+  html body main .ant-table-wrapper table {
+    min-width: 980px;
+    table-layout: auto !important;
+  }
+  html body main .ant-table-wrapper th,
+  html body main .ant-table-wrapper td {
+    white-space: nowrap;
+  }
+  /* long free text may wrap */
+  html body main .ant-table-wrapper td:has(> .wrap-cell) {
+    white-space: normal;
+    min-width: 160px;
+  }
+}

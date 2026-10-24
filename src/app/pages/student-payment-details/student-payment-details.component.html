@@ -32,14 +32,7 @@
                class=" cursor-pointer"
              />
              }@else {
-             <img
-               loading="lazy"
-               width="140"
-               height="150"
-               style="border-radius: 15px; margin: auto"
-               [src]="'assets/user.png'"
-               alt="img"
-             />
+             <div style="display: flex; justify-content: center"><app-student-avatar [name]="studentDetails.name" [size]="150" /></div>
              }
          </div>
          <div nz-col nzLg="12" nzMd="12">
@@ -142,14 +135,7 @@
                 class=" cursor-pointer"
               />
               }@else {
-              <img
-                loading="lazy"
-                width="70"
-                height="70"
-                style="margin: auto"
-                [src]="'assets/user.png'"
-                alt="img"
-              />
+              <div style="display: flex; justify-content: center"><app-student-avatar [name]="data.studentDetails.name" [size]="70" /></div>
               }
             </td>
             <td>{{ data.date | date:'dd-MM-yyyy' }}</td>

@@ -1,3 +1,4 @@
+import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
 import { Component, OnInit, ViewContainerRef, ViewChild } from '@angular/core';
@@ -93,6 +94,7 @@ interface ColumnItem {
   selector: 'app-all-students',
   standalone: true,
   imports: [
+    StudentAvatarComponent,
     StudentDetailsComponent,
     FilterBarComponent,
     EditStudentsModalComponent,

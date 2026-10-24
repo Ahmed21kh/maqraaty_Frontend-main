@@ -1,3 +1,4 @@
+import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -71,6 +72,7 @@ interface ColumnItem {
     templateUrl: './payments.component.html',
     styleUrl: './payments.component.scss',
     imports: [
+    StudentAvatarComponent,
     StudentSelectComponent,
     NzGridModule,
     PageHeaderComponent,
