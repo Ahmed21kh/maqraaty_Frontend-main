@@ -123,6 +123,16 @@ export class WhatsappSocketService {
         else this.messageServ.warning(`تم الارسال الى ${sent} وفشل الارسال الى ${failed}`);
       });
 
+      // the server has no browser installed (hosted deployment): shown once instead of spinning forever
+      socket.on('whatsapp:unavailable', (value: { message: string }) => {
+        this.status.set('disconnected');
+        this.qrImage.set(null);
+        this.qrValue.set(null);
+        this.loading.set(false);
+        this.loadingQr.set(false);
+        this.connectionError.set(value.message);
+      });
+
       socket.on('whatsapp:timeout', (value: { reason: string }) => {
         this.connectionError.set(value.reason);
       });
