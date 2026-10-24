@@ -12,6 +12,8 @@
   display: flex;
   flex: 1 0 104px;
   flex-direction: column;
+  // older Chromium (Electron) gives <button> `align-items: flex-start`, which collapses the bar to 0 width
+  align-items: stretch;
   gap: 2px;
   min-width: 104px;
   padding: 10px 12px 12px;
@@ -40,6 +42,7 @@
 
   .chip-bar {
     display: block;
+    width: 100%;
     height: 4px;
     margin-top: 6px;
     overflow: hidden;
