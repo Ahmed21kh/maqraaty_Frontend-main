@@ -965,7 +965,8 @@ html body main .ant-table-wrapper:has(thead tr > th:last-child:empty) {
     gap: 8px;
   }
 
-  .ant-table-tbody > tr > td:last-child .anticon {
+  /* only bare icons get the square button look; icons inside real buttons (e.g. the reminder) are left alone */
+  .ant-table-tbody > tr > td:last-child > div > .anticon {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -976,7 +977,7 @@ html body main .ant-table-wrapper:has(thead tr > th:last-child:empty) {
     background: color-mix(in srgb, currentColor 12%, transparent);
     transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
   }
-  .ant-table-tbody > tr > td:last-child .anticon:hover {
+  .ant-table-tbody > tr > td:last-child > div > .anticon:hover {
     background: color-mix(in srgb, currentColor 24%, transparent);
     transform: translateY(-1px);
     box-shadow: 0 4px 10px color-mix(in srgb, currentColor 22%, transparent);

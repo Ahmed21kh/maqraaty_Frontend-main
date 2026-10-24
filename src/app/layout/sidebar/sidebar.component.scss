@@ -12,6 +12,9 @@
     color-mix(in srgb, var(--app-sidebar-via) 78%, transparent) 55%,
     color-mix(in srgb, var(--app-sidebar-to) 82%, transparent) 100%
   );
+  // the gradient must span the border box: with the default padding-box origin it repeats into the 1px border,
+  // so the bottom edge showed a thin line in the gradient's first (brightest) colour
+  background-origin: border-box;
   -webkit-backdrop-filter: blur(18px) saturate(140%);
   backdrop-filter: blur(18px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
