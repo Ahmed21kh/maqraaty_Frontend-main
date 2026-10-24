@@ -1,3 +1,4 @@
+import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
 import { Component, OnInit, ViewContainerRef, ViewChild } from '@angular/core';
 import { NzGridModule } from 'ng-zorro-antd/grid';
@@ -92,6 +93,7 @@ interface ColumnItem {
   selector: 'app-all-students',
   standalone: true,
   imports: [
+    StudentDetailsComponent,
     FilterBarComponent,
     EditStudentsModalComponent,
            NzGridModule,

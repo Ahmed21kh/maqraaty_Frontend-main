@@ -1,3 +1,4 @@
+import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { StudentSelectComponent } from '../../shared/components/student-select/student-select.component';
 import { FilterBarComponent } from '../../shared/components/filter-bar/filter-bar.component';
 import { EditStudentsModalComponent } from '../../shared/components/edit-students-modal/edit-students-modal.component';
@@ -96,6 +97,7 @@ interface ColumnItem {
     templateUrl: './registered-students.component.html',
     styleUrl: './registered-students.component.scss',
     imports: [
+    StudentDetailsComponent,
     StudentSelectComponent,
     FilterBarComponent,
     EditStudentsModalComponent,
