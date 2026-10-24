@@ -304,28 +304,22 @@
   <nz-modal [(nzVisible)]="isDeleteModal" nzTitle="دفع الاشتراك للطالب" (nzOnCancel)="handleCancelConfirmpay()"
     nzCancelText="الغاء" nzOkText="دفع" [nzFooter]="delFooter" (nzOnOk)="handlePay()" [nzOkDisabled]="!payForm.valid">
     <ng-container *nzModalContent>
-      <form dir="rtl" [formGroup]="payForm" autocomplete="on" class="flex gap-3 items-center flex-wrap">
-        <div class=" w-full">
-          <label for="payment"> قيمة الاشتراك : </label>
-          <input [nzSize]="'large'" class="rounded-md mt-2" nz-input type="number" placeholder="ادخل قيمة الاشتراك"
+      <form dir="rtl" [formGroup]="payForm" autocomplete="on" class="flex flex-col gap-5">
+        <div class="flex flex-col gap-2">
+          <label for="payment" class="font-medium">قيمة الاشتراك:</label>
+          <input id="payment" [nzSize]="'large'" class="rounded-md" nz-input type="number" placeholder="ادخل قيمة الاشتراك"
             formControlName="amount" />
           @if (pf['amount'].errors?.['required'] && pf['amount'].touched) {
-          <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
-          } @else {
-          <p></p>
+          <span class="text-sm" style="color: var(--app-danger)">هذا الحقل مطلوب</span>
           }
         </div>
-        <div class=" w-full">
-          <label for="date"> تاريخ الدفع : </label>
+        <div class="flex flex-col gap-2">
+          <label for="date" class="font-medium">تاريخ الدفع:</label>
           <nz-date-picker [nzSize]="'large'" [nzAllowClear]="true" [nzInputReadOnly]="true"
-            class=" !w-full rounded-md mt-2" formControlName="date" nzPlaceHolder="اختر التاريخ"></nz-date-picker>
-
+            class="!w-full rounded-md" formControlName="date" nzPlaceHolder="اختر التاريخ"></nz-date-picker>
           @if (pf['date'].errors?.['required'] && pf['date'].touched) {
-          <p style="color: var(--app-danger)">هذا الحقل مطلوب</p>
-          } @else {
-          <p></p>
+          <span class="text-sm" style="color: var(--app-danger)">هذا الحقل مطلوب</span>
           }
-
         </div>
       </form>
     </ng-container>
