@@ -2,79 +2,12 @@
   <div>
     <app-page-header></app-page-header>
     <div class="attendance_table">
-      <nz-card nzTitle="تفاصيل الحضور" [nzBordered]="true" class="!rounded-md">
-        @if (loadingData) {
-        <div nz-row [nzGutter]="[24, 24]" [nzJustify]="'space-around'">
-          <div nz-col nzXs="24" nzLg="8" class="flex items-center gap-2">
-            <span nz-icon nzType="usergroup-add" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-            <span class="text-lg font-semibold">عدد الطلاب :</span>
-            <span>
-              <nz-skeleton-element class="mr-1" nzType="button" [nzActive]="true" [nzBlock]="false" [nzSize]="'small'"
-                [nzShape]="'round'"></nz-skeleton-element>
-            </span>
-          </div>
-          <div nz-col nzXs="24" nzLg="8" class="flex items-center gap-2">
-            <span nz-icon nzType="user-add" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-            <span class="text-lg font-semibold">عدد الحضور :</span>
-            <span>
-              <nz-skeleton-element class="mr-1" nzType="button" [nzActive]="true" [nzBlock]="false" [nzSize]="'small'"
-                [nzShape]="'round'"></nz-skeleton-element>
-            </span>
-          </div>
-          <div nz-col nzXs="24" nzLg="8" class="flex items-center gap-2">
-            <span nz-icon nzType="user-delete" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-            <span class="text-lg font-semibold">عدد الغياب :</span>
-            <span>
-              <nz-skeleton-element class="mr-1" nzType="button" [nzActive]="true" [nzBlock]="false" [nzSize]="'small'"
-                [nzShape]="'round'"></nz-skeleton-element>
-            </span>
-          </div>
-        </div>
-
-        }@else {
-
-        <div nz-row [nzGutter]="[24, 24]" [nzJustify]="'space-around'">
-          <div nz-col nzXs="24" nzLg="8" class="!flex !items-center !gap-2">
-            <span nz-icon nzType="usergroup-add" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-            <span class="text-lg font-semibold">عدد الطلاب :</span>
-
-            <nz-tag class="!text-xl">{{
-              attendanceDetails?.totalStudents
-              ? attendanceDetails?.totalStudents
-              : 0
-              }}</nz-tag>
-          </div>
-          <div nz-col nzXs="24" nzLg="8" class=" !flex !items-center !gap-2">
-            <span nz-icon nzType="user-add" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-
-            <span class="text-lg font-semibold">عدد الحضور :</span>
-            <nz-tag class="!text-xl" [nzColor]="'green'">{{
-              attendanceDetails?.totalAttend
-              ? attendanceDetails?.totalAttend
-              : 0
-              }}</nz-tag>
-            <!-- <span
-              class="text-xl font-bold text-green-600 py-0 flex justify-center w-fit items-center rounded-lg"
-              >{{ attendanceDetails?.totalAttend }}</span
-            > -->
-          </div>
-          <div nz-col nzXs="24" nzLg="8" class="!flex !items-center !gap-2">
-            <span nz-icon nzType="user-delete" nzTheme="outline" class="text-gray-400 me-1 text-xl"></span>
-
-            <span class="text-lg font-semibold">عدد الغياب :</span>
-            <nz-tag class="!text-xl" [nzColor]="'red'">{{
-              attendanceDetails?.totalAbsent
-              ? attendanceDetails?.totalAbsent
-              : 0
-              }}</nz-tag>
-            <!-- <span
-              class="text-xl font-bold text-red-600 py-0 flex justify-center w-fit items-center rounded-lg"
-              >{{ attendanceDetails?.totalAbsent }}</span
-            > -->
-          </div>
-        </div>
-        }
-      </nz-card>
+      <section class="mb-5 grid grid-cols-4 gap-4 xl:grid-cols-2 sm:grid-cols-1" aria-label="تفاصيل الحضور">
+        <app-stat-card label="عدد الطلاب" icon="usergroup-add" tone="primary" [value]="attendanceDetails?.totalStudents || 0" [loading]="loadingData" />
+        <app-stat-card label="عدد الحضور" icon="user-add" tone="success" [value]="attendanceDetails?.totalAttend || 0" [loading]="loadingData" />
+        <app-stat-card label="عدد الغياب" icon="user-delete" tone="danger" [value]="attendanceDetails?.totalAbsent || 0" [loading]="loadingData" />
+        <app-stat-card label="نسبة الحضور" icon="percentage" tone="warning" [value]="attendanceRate()" suffix="%" [loading]="loadingData" />
+      </section>
 
       <app-filter-bar>
         <nz-input-group [nzSize]="'large'" style="border-radius: 15px" [nzSuffix]="suffixIconSearch">

@@ -1,3 +1,4 @@
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { StudentAvatarComponent } from '../../shared/components/student-avatar/student-avatar.component';
 import { StudentDetailsComponent } from '../../shared/components/student-details/student-details.component';
 import { MonthCarouselComponent } from '../../shared/components/month-carousel/month-carousel.component';
@@ -100,6 +101,7 @@ interface ColumnItem {
   templateUrl: './attendance.component.html',
   styleUrl: './attendance.component.scss',
   imports: [
+    StatCardComponent,
     StudentAvatarComponent,
     StudentDetailsComponent,
     MonthCarouselComponent,
@@ -208,6 +210,13 @@ export class AttendanceComponent implements OnInit {
   pageNumber: number = 1;
   count!: number;
   total!: number;
+
+  /** Present / (present + absent) of the days recorded so far, as a whole percent. */
+  attendanceRate(): number {
+    const present = Number(this.attendanceDetails?.totalAttend) || 0;
+    const absent = Number(this.attendanceDetails?.totalAbsent) || 0;
+    return present + absent > 0 ? Math.round((present / (present + absent)) * 100) : 0;
+  }
   totalPages!: number;
   loadingAdd: boolean = false;
   loadingAEdit: boolean = false;
