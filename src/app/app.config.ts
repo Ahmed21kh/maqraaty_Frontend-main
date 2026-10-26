@@ -1,6 +1,5 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withInMemoryScrolling, withPreloading, withViewTransitions, PreloadAllModules } from '@angular/router';
-import { provideClientHydration } from '@angular/platform-browser';
 import { routes } from './app.routes';
 import { provideCore } from './core/providers/core.providers';
 
@@ -27,7 +26,6 @@ export const appConfig: ApplicationConfig = {
         },
       })
     ),
-    provideClientHydration(),
     provideCore(),
   ],
 };
