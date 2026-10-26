@@ -47,3 +47,10 @@ Thumbs.db
 
 # build output
 /win32
+
+
+
+.nx/cache
+.nx/workspace-data
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md

@@ -22,7 +22,7 @@ import { isRouteActive, NAV_ITEMS, NavItem } from '../nav.config';
       aria-label="القائمة الرئيسية"
     >
       <a routerLink="/home" class="sidebar-brand flex items-center gap-3 px-4 py-5" aria-label="مقرأتي — الرئيسية">
-        <img src="assets/قران.webp" alt="" width="44" height="44" class="h-11 w-11 shrink-0 rounded-app-sm object-cover" />
+        <img src="assets/quran-cover.webp" alt="" width="44" height="44" class="h-11 w-11 shrink-0 rounded-app-sm object-cover" />
         @if (!collapsed()) {
           <span class="brand-name truncate text-2xl font-bold tracking-wide">مقرأتــــي</span>
         }

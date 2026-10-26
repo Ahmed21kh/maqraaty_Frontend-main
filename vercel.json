@@ -1,6 +1,9 @@
 {
   "version": 2,
-  "name": "maqraaty",
+  "buildCommand": "npx nx build maqraaty_2 --configuration=production",
+  "outputDirectory": "dist/maqraaty_2/browser",
+  "installCommand": "npm install",
+  "framework": null,
   "rewrites": [
     {
       "source": "/(.*)",
